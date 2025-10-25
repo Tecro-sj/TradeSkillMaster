@@ -2808,7 +2808,7 @@ function GUI:CreateTaskListWindow()
 	}
 	local frame = TSMAPI:CreateMovableFrame("TSMCraftingTaskList", frameDefaults)
 	frame:SetResizable(true)
-	frame:SetMinResize(450, 400)
+	frame:SetMinResize(200, 150)
 	TSMAPI.Design:SetFrameBackdropColor(frame)
 	-- Remove top border line
 	frame:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8", edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=0})
