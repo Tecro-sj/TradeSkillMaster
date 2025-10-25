@@ -216,7 +216,8 @@ function private:InitializeAHTab()
 end
 
 function TSMAPI:AHTabIsVisible(module)
-	return module and _G["AuctionFrameTab"..AuctionFrame.selectedTab].isTSMTab == module
+	if not module or not AuctionFrame then return false end
+	return _G["AuctionFrameTab"..AuctionFrame.selectedTab].isTSMTab == module
 end
 
 function private:AUCTION_HOUSE_SHOW()
