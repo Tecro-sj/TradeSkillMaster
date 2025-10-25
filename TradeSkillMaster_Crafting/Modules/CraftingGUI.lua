@@ -2795,6 +2795,23 @@ function GUI:CreateTaskListWindow()
 		if GUI.taskListFrame:IsVisible() then
 			GUI.taskListFrame:Hide()
 		else
+			-- If window is collapsed, expand it first
+			if GUI.taskListFrame.isCollapsed then
+				GUI.taskListFrame.isCollapsed = false
+				GUI.taskListFrame:SetHeight(290)
+				GUI.taskListFrame.content:Show()
+				if GUI.taskListFrame.sizer then
+					GUI.taskListFrame.sizer:Show()
+				end
+				if GUI.taskListFrame.collapseBtn then
+					GUI.taskListFrame.collapseBtn:SetText("-")
+				end
+			end
+			-- Make sure frame is in a valid position
+			if not GUI.taskListFrame:GetTop() or GUI.taskListFrame:GetTop() > UIParent:GetHeight() then
+				GUI.taskListFrame:ClearAllPoints()
+				GUI.taskListFrame:SetPoint("CENTER")
+			end
 			GUI.taskListFrame:Show()
 			GUI:UpdateTaskList()
 		end
@@ -3105,6 +3122,8 @@ function GUI:CreateTaskListWindow()
 	local image = sizer:CreateTexture(nil, "BACKGROUND")
 	image:SetAllPoints()
 	image:SetTexture("Interface\\Addons\\TradeSkillMaster\\Media\\Sizer")
+
+	frame.sizer = sizer
 
 	-- Collapse/Expand functionality
 	local collapsedHeight = 30
