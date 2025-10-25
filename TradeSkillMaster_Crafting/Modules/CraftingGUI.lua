@@ -2826,7 +2826,16 @@ function GUI:CreateTaskListWindow()
 	title:SetFont(TSMAPI.Design:GetContentFont(), 18)
 	TSMAPI.Design:SetWidgetLabelColor(title)
 	title:SetPoint("TOP", frame, 0, -3)
-	title:SetText(L["TSM Crafting - Task List"])
+	title:SetText(L["Task List"])
+
+	-- Collapse button
+	local collapseBtn = TSMAPI.GUI:CreateButton(frame, 18)
+	collapseBtn:SetPoint("TOPRIGHT", -24, -3)
+	collapseBtn:SetWidth(19)
+	collapseBtn:SetHeight(19)
+	collapseBtn:SetText("-")
+	frame.collapseBtn = collapseBtn
+	frame.isCollapsed = false
 
 	-- Close button
 	local closeBtn = TSMAPI.GUI:CreateButton(frame, 18)
@@ -2946,6 +2955,9 @@ function GUI:CreateTaskListWindow()
 				TSM.db.realm.queueStatus.collapsed[data.profession] = not TSM.db.realm.queueStatus.collapsed[data.profession]
 			end
 			GUI:UpdateTaskList()
+		elseif data.index and data.spellID then
+			-- Start crafting when clicking on a queued craft
+			GUI:CastTradeSkill(data.index, min(data.canCraft, data.numQueued), data.velName)
 		end
 	end
 
@@ -3086,6 +3098,29 @@ function GUI:CreateTaskListWindow()
 	image:SetAllPoints()
 	image:SetTexture("Interface\\Addons\\TradeSkillMaster\\Media\\Sizer")
 
+	-- Collapse/Expand functionality
+	local collapsedHeight = 30
+	local expandedHeight = frame:GetHeight()
+
+	collapseBtn:SetScript("OnClick", function()
+		if frame.isCollapsed then
+			-- Expand
+			frame:SetHeight(expandedHeight)
+			frame.content:Show()
+			sizer:Show()
+			frame.isCollapsed = false
+			collapseBtn:SetText("-")
+		else
+			-- Collapse
+			expandedHeight = frame:GetHeight()
+			frame:SetHeight(collapsedHeight)
+			frame.content:Hide()
+			sizer:Hide()
+			frame.isCollapsed = true
+			collapseBtn:SetText("+")
+		end
+	end)
+
 	frame:Show()
 	GUI:UpdateTaskList()
 end
@@ -3156,6 +3191,15 @@ function GUI:UpdateTaskList()
 							color = "|cffff7700"
 						end
 
+						-- Find the trade skill index for this spellID
+						local tradeSkillIndex = nil
+						for i = 1, GetNumTradeSkills() do
+							if TSM.Util:GetSpellID(i) == spellID then
+								tradeSkillIndex = i
+								break
+							end
+						end
+
 						local row = {
 							cols = {
 								{
@@ -3163,9 +3207,11 @@ function GUI:UpdateTaskList()
 								},
 							},
 							spellID = spellID,
+							index = tradeSkillIndex,
 							canCraft = (canCraft > 0) and canCraft or 0,
 							numQueued = numQueued,
 							profit = select(3, TSM.Cost:GetCraftPrices(spellID)),
+							velName = TSM.db.realm.crafts[spellID].velName,
 						}
 						tinsert(craftRows, row)
 					end
