@@ -2848,7 +2848,7 @@ function GUI:CreateTaskListWindow()
 	local queueContainer = CreateFrame("Frame", nil, frame.content)
 	queueContainer:SetPoint("TOPLEFT", 5, -5)
 	queueContainer:SetPoint("TOPRIGHT", -5, -5)
-	queueContainer:SetHeight(30%)
+	queueContainer:SetHeight(125)
 	TSMAPI.Design:SetFrameColor(queueContainer)
 	frame.queueContainer = queueContainer
 
