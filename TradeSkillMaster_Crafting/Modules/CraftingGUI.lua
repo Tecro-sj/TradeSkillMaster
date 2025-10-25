@@ -2862,7 +2862,21 @@ function GUI:CreateTaskListWindow()
 	closeBtn:SetWidth(19)
 	closeBtn:SetHeight(19)
 	closeBtn:SetText("X")
-	closeBtn:SetScript("OnClick", function() frame:Hide() end)
+	closeBtn:SetScript("OnClick", function()
+		-- Reset collapsed state when closing
+		if frame.isCollapsed then
+			frame.isCollapsed = false
+			frame:SetHeight(290)
+			frame.content:Show()
+			if frame.sizer then
+				frame.sizer:Show()
+			end
+			if frame.collapseBtn then
+				frame.collapseBtn:SetText("-")
+			end
+		end
+		frame:Hide()
+	end)
 
 	-- No horizontal line under title (removed)
 
