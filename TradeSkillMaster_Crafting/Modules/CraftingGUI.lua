@@ -2816,8 +2816,8 @@ function GUI:CreateTaskListWindow()
 		frame:SetBackdropColor(unpack(TSM.db.profile.design.frameColors.frameBG.backdrop))
 		frame:SetBackdropBorderColor(unpack(TSM.db.profile.design.frameColors.frameBG.border))
 	else
-		frame:SetBackdropColor(0, 0, 0, 1)
-		frame:SetBackdropBorderColor(0, 0, 0, 1)
+		frame:SetBackdropColor(29, 26, 24, 1)
+		frame:SetBackdropBorderColor(31, 31, 31, 1)
 	end
 	tinsert(UISpecialFrames, "TSMCraftingTaskList")
 	GUI.taskListFrame = frame
