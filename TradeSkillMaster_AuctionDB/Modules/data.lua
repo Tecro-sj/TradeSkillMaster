@@ -17,6 +17,7 @@ local debugprofilestop = debugprofilestop
 local floor = floor
 local format = format
 local ipairs = ipairs
+local min = min
 local pairs = pairs
 local sqrt = sqrt
 local time = time
@@ -55,6 +56,135 @@ function Data:GetDay(t)
 	return floor(t / (60*60*24))
 end
 
+--- Calculate price change percentage
+-- @param currentValue The current price value
+-- @param historicalScans The historical scans data
+-- @param daysAgo How many days back to compare (default: 7)
+-- @return percentChange The percentage change (positive = price increase, negative = decrease), or nil if no data
+function Data:CalculatePriceChange(currentValue, historicalScans, daysAgo)
+	if not currentValue or not historicalScans or currentValue <= 0 then
+		return nil
+	end
+
+	daysAgo = daysAgo or 7
+	local day = Data:GetDay()
+	local oldDay = day - daysAgo
+
+	-- Get the historical value
+	local oldValue
+	if type(historicalScans[oldDay]) == "table" then
+		oldValue = historicalScans[oldDay].avg
+	else
+		oldValue = historicalScans[oldDay]
+	end
+
+	-- If we don't have data from that day, try nearby days
+	if not oldValue or oldValue <= 0 then
+		for offset = 1, 3 do
+			local checkDay = oldDay + offset
+			if type(historicalScans[checkDay]) == "table" then
+				oldValue = historicalScans[checkDay].avg
+			else
+				oldValue = historicalScans[checkDay]
+			end
+			if oldValue and oldValue > 0 then break end
+
+			checkDay = oldDay - offset
+			if type(historicalScans[checkDay]) == "table" then
+				oldValue = historicalScans[checkDay].avg
+			else
+				oldValue = historicalScans[checkDay]
+			end
+			if oldValue and oldValue > 0 then break end
+		end
+	end
+
+	if not oldValue or oldValue <= 0 then
+		return nil
+	end
+
+	-- Calculate percentage change
+	local percentChange = ((currentValue - oldValue) / oldValue) * 100
+	return percentChange
+end
+
+--- Get price change arrow and color
+-- @param percentChange The percentage change
+-- @return arrow, colorCode The arrow symbol and color code for display
+function Data:GetPriceChangeIndicator(percentChange)
+	if not percentChange then
+		return "", "|cffffffff"
+	end
+
+	local arrow, colorCode
+
+	if percentChange <= -20 then
+		arrow = " ↓↓"
+		colorCode = "|cff00ff00"  -- Bright green
+	elseif percentChange <= -10 then
+		arrow = " ↓↓"
+		colorCode = "|cff55ff55"  -- Light green
+	elseif percentChange <= -5 then
+		arrow = " ↓"
+		colorCode = "|cff99ff99"  -- Pale green
+	elseif percentChange < -2 then
+		arrow = " ↓"
+		colorCode = "|cffccffcc"  -- Very pale green
+	elseif percentChange <= 2 then
+		arrow = " →"
+		colorCode = "|cffffff00"  -- Yellow (stable)
+	elseif percentChange < 5 then
+		arrow = " ↑"
+		colorCode = "|cffffcccc"  -- Very pale red
+	elseif percentChange < 10 then
+		arrow = " ↑"
+		colorCode = "|cffff9999"  -- Pale red
+	elseif percentChange < 20 then
+		arrow = " ↑↑"
+		colorCode = "|cffff5555"  -- Light red
+	else
+		arrow = " ↑↑"
+		colorCode = "|cffff0000"  -- Bright red
+	end
+
+	return arrow, colorCode
+end
+
+--- Calculate MinBuy (average of cheapest 50 auctions)
+-- @param data The market scan data with records table
+-- @return The average price of the cheapest auctions, or nil if no data
+function Data:CalculateMinBuy(data)
+	local records = data.records
+
+	if type(records) ~= "table" or #records <= 0 then
+		return nil
+	end
+
+	-- Sort records by price per item (ascending)
+	local sortedPrices = {}
+	for _, record in ipairs(records) do
+		if type(record) == "table" then
+			-- New format: {stack_size, buyout_per_item}
+			tinsert(sortedPrices, record[2])
+		else
+			-- Old format: just the price
+			tinsert(sortedPrices, record)
+		end
+	end
+
+	tsort(sortedPrices)
+
+	-- Take the cheapest 50 auctions (or fewer if less available)
+	local numToAverage = min(50, #sortedPrices)
+	local total = 0
+
+	for i = 1, numToAverage do
+		total = total + sortedPrices[i]
+	end
+
+	return floor(total / numToAverage + 0.5)
+end
+
 -- Updates all the market values
 function Data:UpdateMarketValue(itemData)
 	local day = Data:GetDay()
@@ -82,6 +212,55 @@ function Data:UpdateMarketValue(itemData)
 		end
 	end
 	itemData.marketValue = Data:GetMarketValue(itemData.scans)
+end
+
+-- Updates DBMinBuyout (historical average of MinBuy values)
+function Data:UpdateDBMinBuyout(itemData)
+	if not itemData.minBuyScans then return end
+
+	local day = Data:GetDay()
+	local minBuyScans = CopyTable(itemData.minBuyScans)
+	itemData.minBuyScans = {}
+
+	for i=0, 14 do
+		if i <= TSM.MAX_AVG_DAY then
+			if type(minBuyScans[day-i]) == "number" then
+				minBuyScans[day-i] = {avg=minBuyScans[day-i], count=1}
+			end
+			itemData.minBuyScans[day-i] = minBuyScans[day-i] and CopyTable(minBuyScans[day-i])
+		else
+			local dayScans = minBuyScans[day-i]
+			if type(dayScans) == "table" then
+				if dayScans.avg then
+					itemData.minBuyScans[day-i] = dayScans.avg
+				else
+					itemData.minBuyScans[day-i] = Data:GetAverage(dayScans)
+				end
+			elseif dayScans then
+				itemData.minBuyScans[day-i] = dayScans
+			end
+		end
+	end
+
+	-- Calculate DBMinBuyout (weighted average similar to DBMarket)
+	local total, totalWeight = 0, 0
+	for i=0, 14 do
+		local value
+		if type(itemData.minBuyScans[day-i]) == "table" then
+			value = itemData.minBuyScans[day-i].avg
+		else
+			value = itemData.minBuyScans[day-i]
+		end
+
+		if value and value > 0 then
+			total = total + value * WEIGHTS[i]
+			totalWeight = totalWeight + WEIGHTS[i]
+		end
+	end
+
+	if totalWeight > 0 then
+		itemData.minBuyout = floor(total / totalWeight + 0.5)
+	end
 end
 
 -- gets the average of a list of numbers
@@ -319,7 +498,30 @@ function Data:ProcessData(scanData, groupItems, verifyNewAlgorithm)
 				TSM.data[itemID].lastScan = TSM.db.realm.lastCompleteScan
 				TSM.data[itemID].minBuyout = data.minBuyout > 0 and data.minBuyout or nil
 				TSM.data[itemID].quantity = data.quantity  -- Counts all items of all stacks.
+
+				-- Calculate and store MinBuy (average of cheapest 50 auctions)
+				local minBuy = Data:CalculateMinBuy(data)
+				TSM.data[itemID].minBuy = minBuy
+
+				-- Store MinBuy in historical database for DBMinBuyout
+				if minBuy and minBuy > 0 then
+					TSM.data[itemID].minBuyScans = TSM.data[itemID].minBuyScans or {}
+					local minBuyScans = TSM.data[itemID].minBuyScans
+					minBuyScans[day] = minBuyScans[day] or {avg=0, count=0}
+					if type(minBuyScans[day]) == "number" then
+						minBuyScans[day] = {minBuyScans[day]}
+					end
+					minBuyScans[day].avg = minBuyScans[day].avg or 0
+					minBuyScans[day].count = minBuyScans[day].count or 0
+					if #minBuyScans[day] > 0 then
+						minBuyScans[day] = Data:ConvertScansToAvg(minBuyScans[day])
+					end
+					minBuyScans[day].avg = floor((minBuyScans[day].avg * minBuyScans[day].count + minBuy) / (minBuyScans[day].count + 1) + 0.5)
+					minBuyScans[day].count = minBuyScans[day].count + 1
+				end
+
 				Data:UpdateMarketValue(TSM.data[itemID])
+				Data:UpdateDBMinBuyout(TSM.data[itemID])
 
 				-- Update our archived, encoded representation of this item's data.
 				TSM:EncodeItemData(itemID)

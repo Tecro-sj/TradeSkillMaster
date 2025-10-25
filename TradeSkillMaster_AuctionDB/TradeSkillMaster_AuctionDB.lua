@@ -35,6 +35,9 @@ local savedDBDefaults = {
 		hidePoorQualityItems = true,
 		marketValueTooltip = true,
 		minBuyoutTooltip = true,
+		minBuyTooltip = true,
+		showPriceChange = true,
+		priceChangeDays = 7,
 		showAHTab = true,
 		disableGetAll = false,
 		quickScanMinAuctions = 3,
@@ -65,6 +68,7 @@ function TSM:RegisterModule()
 	TSM.priceSources = {
 		{ key = "DBMarket", label = L["AuctionDB - Market Value"], callback = "GetMarketValue" },
 		{ key = "DBMinBuyout", label = L["AuctionDB - Minimum Buyout"], callback = "GetMinBuyout" },
+		{ key = "MinBuy", label = L["AuctionDB - Minimum Buy (Avg 50)"], callback = "GetMinBuy" },
 	}
 	TSM.icons = {
 		{ side = "module", desc = "AuctionDB", slashCommand = "auctiondb", callback = "Config:Load", icon = "Interface\\Icons\\Inv_Misc_Platnumdisks" },
@@ -247,38 +251,80 @@ function TSM:GetTooltip(itemString, quantity)
 	if TSM.db.profile.marketValueTooltip then
 		local marketValue = TSM:GetMarketValue(itemID)
 		if marketValue then
-				if moneyCoinsTooltip then
-					if IsShiftKeyDown() then
-						tinsert(text, { left = "  " .. format(L["Market Value x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(marketValue * quantity, "|cffffffff", true) })
-					else
-						tinsert(text, { left = "  " .. L["Market Value:"], right = TSMAPI:FormatTextMoneyIcon(marketValue, "|cffffffff", true) })
-					end
-				else
-					if IsShiftKeyDown() then
-						tinsert(text, { left = "  " .. format(L["Market Value x%s:"], quantity), right = TSMAPI:FormatTextMoney(marketValue * quantity, "|cffffffff", true) })
-					else
-						tinsert(text, { left = "  " .. L["Market Value:"], right = TSMAPI:FormatTextMoney(marketValue, "|cffffffff", true) })
-					end
+			TSM:DecodeItemData(itemID)
+			local priceChangeText = ""
+			if TSM.db.profile.showPriceChange and TSM.data[itemID].scans then
+				local percentChange = TSM.Data:CalculatePriceChange(marketValue, TSM.data[itemID].scans, TSM.db.profile.priceChangeDays)
+				if percentChange then
+					local arrow, colorCode = TSM.Data:GetPriceChangeIndicator(percentChange)
+					priceChangeText = format(" %s%s (%.1f%%)|r", colorCode, arrow, percentChange)
 				end
 			end
+
+			if moneyCoinsTooltip then
+				if IsShiftKeyDown() then
+					tinsert(text, { left = "  " .. format(L["Market Value x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(marketValue * quantity, "|cffffffff", true) .. priceChangeText })
+				else
+					tinsert(text, { left = "  " .. L["Market Value:"], right = TSMAPI:FormatTextMoneyIcon(marketValue, "|cffffffff", true) .. priceChangeText })
+				end
+			else
+				if IsShiftKeyDown() then
+					tinsert(text, { left = "  " .. format(L["Market Value x%s:"], quantity), right = TSMAPI:FormatTextMoney(marketValue * quantity, "|cffffffff", true) .. priceChangeText })
+				else
+					tinsert(text, { left = "  " .. L["Market Value:"], right = TSMAPI:FormatTextMoney(marketValue, "|cffffffff", true) .. priceChangeText })
+				end
+			end
+		end
 	end
 
 	-- add min buyout info
 	if TSM.db.profile.minBuyoutTooltip then
 		local minBuyout = TSM:GetMinBuyout(itemID)
 		if minBuyout then
+			TSM:DecodeItemData(itemID)
+			local priceChangeText = ""
+			if TSM.db.profile.showPriceChange and TSM.data[itemID].minBuyScans then
+				local percentChange = TSM.Data:CalculatePriceChange(minBuyout, TSM.data[itemID].minBuyScans, TSM.db.profile.priceChangeDays)
+				if percentChange then
+					local arrow, colorCode = TSM.Data:GetPriceChangeIndicator(percentChange)
+					priceChangeText = format(" %s%s (%.1f%%)|r", colorCode, arrow, percentChange)
+				end
+			end
+
 			if quantity then
 				if moneyCoinsTooltip then
 					if IsShiftKeyDown() then
-						tinsert(text, { left = "  " .. format(L["Min Buyout x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(minBuyout * quantity, "|cffffffff", true) })
+						tinsert(text, { left = "  " .. format(L["Min Buyout x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(minBuyout * quantity, "|cffffffff", true) .. priceChangeText })
 					else
-						tinsert(text, { left = "  " .. L["Min Buyout:"], right = TSMAPI:FormatTextMoneyIcon(minBuyout, "|cffffffff", true) })
+						tinsert(text, { left = "  " .. L["Min Buyout:"], right = TSMAPI:FormatTextMoneyIcon(minBuyout, "|cffffffff", true) .. priceChangeText })
 					end
 				else
 					if IsShiftKeyDown() then
-						tinsert(text, { left = "  " .. format(L["Min Buyout x%s:"], quantity), right = TSMAPI:FormatTextMoney(minBuyout * quantity, "|cffffffff", true) })
+						tinsert(text, { left = "  " .. format(L["Min Buyout x%s:"], quantity), right = TSMAPI:FormatTextMoney(minBuyout * quantity, "|cffffffff", true) .. priceChangeText })
 					else
-						tinsert(text, { left = "  " .. L["Min Buyout:"], right = TSMAPI:FormatTextMoney(minBuyout, "|cffffffff", true) })
+						tinsert(text, { left = "  " .. L["Min Buyout:"], right = TSMAPI:FormatTextMoney(minBuyout, "|cffffffff", true) .. priceChangeText })
+					end
+				end
+			end
+		end
+	end
+
+	-- add min buy info (average of cheapest 50 auctions)
+	if TSM.db.profile.minBuyTooltip then
+		local minBuy = TSM:GetMinBuy(itemID)
+		if minBuy then
+			if quantity then
+				if moneyCoinsTooltip then
+					if IsShiftKeyDown() then
+						tinsert(text, { left = "  " .. format(L["Min Buy x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(minBuy * quantity, "|cffffffff", true) })
+					else
+						tinsert(text, { left = "  " .. L["Min Buy:"], right = TSMAPI:FormatTextMoneyIcon(minBuy, "|cffffffff", true) })
+					end
+				else
+					if IsShiftKeyDown() then
+						tinsert(text, { left = "  " .. format(L["Min Buy x%s:"], quantity), right = TSMAPI:FormatTextMoney(minBuy * quantity, "|cffffffff", true) })
+					else
+						tinsert(text, { left = "  " .. L["Min Buy:"], right = TSMAPI:FormatTextMoney(minBuy, "|cffffffff", true) })
 					end
 				end
 			end
@@ -480,7 +526,8 @@ function TSM:EncodeItemData(itemID, tbl)
 	tbl = tbl or TSM.data
 	local data = tbl[itemID]
 	if data and data.marketValue then
-		data.encoded = strjoin(",", encode(0), encode(data.marketValue), encode(data.lastScan), encode(0), encode(data.minBuyout), encodeScans(data.scans), encode(data.quantity))
+		local encodedMinBuyScans = (data.minBuyScans and encodeScans(data.minBuyScans)) or "~"
+		data.encoded = strjoin(",", encode(0), encode(data.marketValue), encode(data.lastScan), encode(0), encode(data.minBuyout), encodeScans(data.scans), encode(data.quantity), encode(data.minBuy), encodedMinBuyScans)
 	end
 end
 
@@ -488,12 +535,14 @@ function TSM:DecodeItemData(itemID, tbl)
 	tbl = tbl or TSM.data
 	local data = tbl[itemID]
 	if data and data.encoded and not data.marketValue then
-		local a, b, c, d, e, f, g = (","):split(data.encoded)
+		local a, b, c, d, e, f, g, h, i = (","):split(data.encoded)
 		data.marketValue = decode(b)
 		data.lastScan = decode(c)
 		data.minBuyout = decode(e)
-		data.scans = decodeScans(f)	
-		data.quantity = decode(g)	
+		data.scans = decodeScans(f)
+		data.quantity = decode(g)
+		data.minBuy = h and decode(h) or nil
+		data.minBuyScans = i and decodeScans(i) or {}
 	end
 end
 
@@ -567,4 +616,13 @@ function TSM:GetMinBuyout(itemID)
 	if not itemID or not TSM.data[itemID] then return end
 	TSM:DecodeItemData(itemID)
 	return TSM.data[itemID].minBuyout
+end
+
+function TSM:GetMinBuy(itemID)
+	if itemID and not tonumber(itemID) then
+		itemID = TSMAPI:GetItemID(itemID)
+	end
+	if not itemID or not TSM.data[itemID] then return end
+	TSM:DecodeItemData(itemID)
+	return TSM.data[itemID].minBuy
 end

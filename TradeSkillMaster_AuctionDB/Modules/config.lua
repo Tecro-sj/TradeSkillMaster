@@ -534,6 +534,44 @@ function Config:LoadTooltipOptions(container)
 					settingInfo = { TSM.db.profile, "minBuyoutTooltip" },
 					tooltip = L["If checked, the lowest buyout value seen in the last scan of the item will be displayed."],
 				},
+				{
+					type = "CheckBox",
+					label = L["Display MinBuy (avg of 50 cheapest) in tooltip."],
+					disabled = not TSM.db.profile.tooltip,
+					settingInfo = { TSM.db.profile, "minBuyTooltip" },
+					tooltip = L["If checked, the MinBuy value (average of the 50 cheapest auctions) will be displayed."],
+				},
+				{
+					type = "Spacer",
+					relativeWidth = 1,
+				},
+				{
+					type = "CheckBox",
+					label = L["Show price change indicators"],
+					disabled = not TSM.db.profile.tooltip,
+					settingInfo = { TSM.db.profile, "showPriceChange" },
+					tooltip = L["If checked, price changes will be displayed with color-coded arrows showing if prices have increased or decreased."],
+					callback = function(_, _, value)
+						container:ReloadTab()
+					end,
+				},
+				{
+					type = "Dropdown",
+					label = L["Price change time period"],
+					disabled = not TSM.db.profile.tooltip or not TSM.db.profile.showPriceChange,
+					list = {
+						[1] = L["1 day"],
+						[3] = L["3 days"],
+						[7] = L["7 days"],
+						[14] = L["14 days"],
+					},
+					value = TSM.db.profile.priceChangeDays,
+					callback = function(_, _, value)
+						TSM.db.profile.priceChangeDays = value
+					end,
+					tooltip = L["Select how many days back to compare prices for the change indicator."],
+					relativeWidth = 0.5,
+				},
 			},
 		},
 	}
