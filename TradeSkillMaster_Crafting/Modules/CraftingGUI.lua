@@ -3160,11 +3160,16 @@ function GUI:CreateTaskListWindow()
 		else
 			-- Collapse
 			expandedHeight = frame:GetHeight()
-			-- Save current position
+			-- Save current position (remember TOP position)
 			local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
 			frame.savedPoint = {point, relativeTo, relativePoint, xOfs, yOfs}
+
+			-- Get the current TOP position
+			local top = frame:GetTop()
+
+			-- Clear and re-anchor to TOP so it collapses upward
 			frame:ClearAllPoints()
-			frame:SetPoint(point, relativeTo, relativePoint, xOfs, yOfs)
+			frame:SetPoint("TOP", UIParent, "BOTTOMLEFT", frame:GetLeft() + frame:GetWidth()/2, top)
 			frame:SetHeight(collapsedHeight)
 			frame.content:Hide()
 			sizer:Hide()
