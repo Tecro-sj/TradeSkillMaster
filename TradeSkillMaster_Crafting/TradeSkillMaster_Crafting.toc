@@ -1,0 +1,33 @@
+## Interface: 30300
+## Title: |cff00ff00TradeSkillMaster_Crafting|r
+## Notes: Provides a rich profession interface complete with a powerful crafting queue.
+## Author: Sapu94, Bart39
+## Version: v2.5.2
+## SavedVariables: AscensionTSM_CraftingDB
+## Dependency: TradeSkillMaster, TradeSkillMaster_ItemTracker
+## X-IconTexture: Interface\AddOns\TradeSkillMaster\Media\TSMLogo
+
+Locale\enUS.lua
+Locale\deDE.lua
+Locale\esES.lua
+Locale\esMX.lua
+Locale\frFR.lua
+Locale\koKR.lua
+Locale\ruRU.lua
+Locale\zhCN.lua
+Locale\zhTW.lua
+Locale\ptBR.lua
+
+TradeSkillMaster_Crafting.lua
+
+Modules\Cost.lua
+Modules\Inventory.lua
+Modules\CraftingGUI.lua
+Modules\Util.lua
+Modules\Queue.lua
+Modules\Options.lua
+Modules\EnchantingInfo.lua
+Modules\Gather.lua
+Modules\Sync.lua
+Modules\SpellNames2IDs.lua
+Modules\VellumInfo.lua

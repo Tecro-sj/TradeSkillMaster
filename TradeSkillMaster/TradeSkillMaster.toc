@@ -1,0 +1,99 @@
+## Interface: 30300
+## Title: |cff00fe00TradeSkillMaster: Revived|r
+## Notes: Core addon for the TradeSkillMaster suite, revived for Wrath of the Lich King. Does nothing without modules installed.
+## Author: Sapu94, Bart39, Gnomezilla [Warmane-Icecrown(A)], BlueAo [Warmane], andrew6180, Yoshiyuka, DimaSheiko, and other contributors...
+## Version: Rev668
+## SavedVariables: TradeSkillMasterAppDB, AscensionTSMDB
+## OptionalDeps: AccurateTime, Ace3, LibDataBroker-1.1, LibDBIcon-1.0, LibExtraTip, TipHelper, LibParse, LibCompress, LibGraph-2.0, SharedMedia, TheUndermineJournal, TheUndermineJournalGE
+## X-Embeds: AccurateTime, Ace3, LibDataBroker-1.1, LibDBIcon-1.0, LibExtraTip, TipHelper, LibParse, LibCompress, LibGraph-2.0
+## X-IconTexture: Interface\AddOns\TradeSkillMaster\Media\TSMLogo
+# TSM Revived is based on TSM v2.8.3.
+
+Libs\LibParse\load.xml
+Libs\LibCompress\lib.xml
+Libs\AccurateTime\AccurateTime.lua
+Libs\LibChatAnims\LibChatAnims.xml
+Libs\LibExtraTip\Load.xml
+
+Locale\enUS.lua
+Locale\deDE.lua
+Locale\esES.lua
+Locale\esMX.lua
+Locale\frFR.lua
+Locale\koKR.lua
+Locale\ruRU.lua
+Locale\zhCN.lua
+Locale\zhTW.lua
+Locale\ptBR.lua
+
+TradeSkillMaster.lua
+
+## Delay functions must be loaded first
+Util\Delay.lua
+
+Core\Templates.xml
+Core\ErrorHandler.lua
+Core\Events.lua
+Core\EventLogger.lua
+Core\Options.lua
+Core\Groups.lua
+Core\Modules.lua
+Core\Mover.lua
+Core\Tooltips.lua
+Core\Sync.lua
+Core\Prices.lua
+Core\Threading.lua
+
+Util\Money.lua
+Util\Items.lua
+Util\Inventory.lua
+Util\Util.lua
+
+Data\Disenchanting.lua
+Data\ItemData.lua
+Data\Conversions.lua
+Data\Vendor.lua
+##Data\ConnectedRealms.lua
+
+Auction\AuctionControl.lua
+Auction\AuctionScanning.lua
+Auction\AuctionQueryUtil.lua
+Auction\AuctionItem.lua
+Auction\AuctionUtil.lua
+Auction\AuctionFrame.lua
+Auction\AuctionResultsTable.lua
+
+GUI\BankUI.lua
+GUI\MainFrame.lua
+GUI\BuildPage.lua
+GUI\Design.lua
+GUI\GUI.lua
+GUI\ScrollingTable.lua
+GUI\GroupTree.lua
+
+GUI\TSMWidgets\TSMMainFrame.lua
+GUI\TSMWidgets\TSMTabGroup.lua
+GUI\TSMWidgets\TSMTreeGroup.lua
+GUI\TSMWidgets\TSMInlineGroup.lua
+GUI\TSMWidgets\TSMScrollFrame.lua
+GUI\TSMWidgets\TSMSimpleGroup.lua
+GUI\TSMWidgets\TSMWindow.lua
+GUI\TSMWidgets\TSMLabel.lua
+GUI\TSMWidgets\TSMCheckBox.lua
+GUI\TSMWidgets\TSMSlider.lua
+GUI\TSMWidgets\TSMButton.lua
+GUI\TSMWidgets\TSMDropdown.lua
+GUI\TSMWidgets\TSMDropdown-Pullout.lua
+GUI\TSMWidgets\TSMDropdown-Items.lua
+GUI\TSMWidgets\TSMMultiLabel.lua
+GUI\TSMWidgets\TSMEditBox.lua
+GUI\TSMWidgets\TSMGroupItemList.lua
+GUI\TSMWidgets\TSMInteractiveLabel.lua
+GUI\TSMWidgets\TSMColorPicker.lua
+GUI\TSMWidgets\TSMMultiLineEditBox.lua
+GUI\TSMWidgets\TSMImage.lua
+GUI\TSMWidgets\TSMGroupBox.lua
+
+Assistant\Assistant.lua
+Assistant\Questions.lua
+Assistant\Steps.lua
