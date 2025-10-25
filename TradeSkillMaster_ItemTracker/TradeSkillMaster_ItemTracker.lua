@@ -201,19 +201,24 @@ function TSM:GetTooltip(itemString)
 
 			if itemValue then
 				if total > 0 then
-					totalGold = " [" .. TSMAPI:FormatTextMoney(total * itemValue, nil, nil, true) .. "]"
+					local goldValue = floor((total * itemValue) / COPPER_PER_GOLD)
+					totalGold = " [" .. goldValue .. "g]"
 				end
 				if bags > 0 then
-					bagGold = " [" .. TSMAPI:FormatTextMoney(bags * itemValue, nil, nil, true) .. "]"
+					local goldValue = floor((bags * itemValue) / COPPER_PER_GOLD)
+					bagGold = " [" .. goldValue .. "g]"
 				end
 				if bank > 0 then
-					bankGold = " [" .. TSMAPI:FormatTextMoney(bank * itemValue, nil, nil, true) .. "]"
+					local goldValue = floor((bank * itemValue) / COPPER_PER_GOLD)
+					bankGold = " [" .. goldValue .. "g]"
 				end
 				if auctions > 0 then
-					auctionGold = " [" .. TSMAPI:FormatTextMoney(auctions * itemValue, nil, nil, true) .. "]"
+					local goldValue = floor((auctions * itemValue) / COPPER_PER_GOLD)
+					auctionGold = " [" .. goldValue .. "g]"
 				end
 				if mail > 0 then
-					mailGold = " [" .. TSMAPI:FormatTextMoney(mail * itemValue, nil, nil, true) .. "]"
+					local goldValue = floor((mail * itemValue) / COPPER_PER_GOLD)
+					mailGold = " [" .. goldValue .. "g]"
 				end
 			end
 
@@ -232,7 +237,8 @@ function TSM:GetTooltip(itemString)
 				-- Calculate gold value for guild bank
 				local gbankGold = ""
 				if itemValue and gbank > 0 then
-					gbankGold = " [" .. TSMAPI:FormatTextMoney(gbank * itemValue, nil, nil, true) .. "]"
+					local goldValue = floor((gbank * itemValue) / COPPER_PER_GOLD)
+					gbankGold = " [" .. goldValue .. "g]"
 				end
 
 				if gbank > 0 then
@@ -247,7 +253,8 @@ function TSM:GetTooltip(itemString)
 
 		-- Add total gold value
 		if itemValue and grandTotal > 0 then
-			local grandTotalGold = " [" .. TSMAPI:FormatTextMoney(grandTotal * itemValue, nil, nil, true) .. "]"
+			local goldValue = floor((grandTotal * itemValue) / COPPER_PER_GOLD)
+			local grandTotalGold = " [" .. goldValue .. "g]"
 			grandTotalText = grandTotalText .. grandTotalGold
 		end
 
