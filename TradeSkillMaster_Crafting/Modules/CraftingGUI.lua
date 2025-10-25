@@ -2990,8 +2990,8 @@ function GUI:CreateTaskListWindow()
 	local matContainer = CreateFrame("Frame", nil, frame.content)
 	matContainer:SetPoint("TOPLEFT", separator, "BOTTOMLEFT", 0, -5)
 	matContainer:SetPoint("TOPRIGHT", separator, "BOTTOMRIGHT", 0, -5)
-	matContainer:SetPoint("BOTTOMLEFT", 5, 110)
-	matContainer:SetPoint("BOTTOMRIGHT", -5, 110)
+	matContainer:SetPoint("BOTTOMLEFT", 5, 90)
+	matContainer:SetPoint("BOTTOMRIGHT", -5, 90)
 	TSMAPI.Design:SetFrameColor(matContainer)
 	frame.matContainer = matContainer
 
