@@ -119,31 +119,31 @@ function Data:GetPriceChangeIndicator(percentChange)
 	local arrow, colorCode
 
 	if percentChange <= -20 then
-		arrow = " ↓↓"
+		arrow = " vv"
 		colorCode = "|cff00ff00"  -- Bright green
 	elseif percentChange <= -10 then
-		arrow = " ↓↓"
+		arrow = " vv"
 		colorCode = "|cff55ff55"  -- Light green
 	elseif percentChange <= -5 then
-		arrow = " ↓"
+		arrow = " v"
 		colorCode = "|cff99ff99"  -- Pale green
 	elseif percentChange < -2 then
-		arrow = " ↓"
+		arrow = " v"
 		colorCode = "|cffccffcc"  -- Very pale green
 	elseif percentChange <= 2 then
-		arrow = " →"
+		arrow = " -"
 		colorCode = "|cffffff00"  -- Yellow (stable)
 	elseif percentChange < 5 then
-		arrow = " ↑"
+		arrow = " ^"
 		colorCode = "|cffffcccc"  -- Very pale red
 	elseif percentChange < 10 then
-		arrow = " ↑"
+		arrow = " ^"
 		colorCode = "|cffff9999"  -- Pale red
 	elseif percentChange < 20 then
-		arrow = " ↑↑"
+		arrow = " ^^"
 		colorCode = "|cffff5555"  -- Light red
 	else
-		arrow = " ↑↑"
+		arrow = " ^^"
 		colorCode = "|cffff0000"  -- Bright red
 	end
 
