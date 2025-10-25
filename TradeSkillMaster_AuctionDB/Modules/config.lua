@@ -536,6 +536,13 @@ function Config:LoadTooltipOptions(container)
 				},
 				{
 					type = "CheckBox",
+					label = L["Display DBMinBuyout (7-day avg of 50 cheapest) in tooltip."],
+					disabled = not TSM.db.profile.tooltip,
+					settingInfo = { TSM.db.profile, "dbMinBuyoutTooltip" },
+					tooltip = L["If checked, the DBMinBuyout value (7-day weighted average of the 50 cheapest auctions) will be displayed."],
+				},
+				{
+					type = "CheckBox",
 					label = L["Display MinBuy (avg of 50 cheapest) in tooltip."],
 					disabled = not TSM.db.profile.tooltip,
 					settingInfo = { TSM.db.profile, "minBuyTooltip" },

@@ -35,6 +35,7 @@ local savedDBDefaults = {
 		hidePoorQualityItems = true,
 		marketValueTooltip = true,
 		minBuyoutTooltip = true,
+		dbMinBuyoutTooltip = true,
 		minBuyTooltip = true,
 		showPriceChange = true,
 		priceChangeDays = 7,
@@ -282,10 +283,32 @@ function TSM:GetTooltip(itemString, quantity)
 	if TSM.db.profile.minBuyoutTooltip then
 		local minBuyout = TSM:GetMinBuyout(itemID)
 		if minBuyout then
+			if quantity then
+				if moneyCoinsTooltip then
+					if IsShiftKeyDown() then
+						tinsert(text, { left = "  " .. format(L["Min Buyout (Cheapest) x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(minBuyout * quantity, "|cffffffff", true) })
+					else
+						tinsert(text, { left = "  " .. L["Min Buyout (Cheapest):"], right = TSMAPI:FormatTextMoneyIcon(minBuyout, "|cffffffff", true) })
+					end
+				else
+					if IsShiftKeyDown() then
+						tinsert(text, { left = "  " .. format(L["Min Buyout (Cheapest) x%s:"], quantity), right = TSMAPI:FormatTextMoney(minBuyout * quantity, "|cffffffff", true) })
+					else
+						tinsert(text, { left = "  " .. L["Min Buyout (Cheapest):"], right = TSMAPI:FormatTextMoney(minBuyout, "|cffffffff", true) })
+					end
+				end
+			end
+		end
+	end
+
+	-- add db min buyout info (7-day weighted average of avg 50 cheapest)
+	if TSM.db.profile.dbMinBuyoutTooltip then
+		local dbMinBuyout = TSM:GetDBMinBuyout(itemID)
+		if dbMinBuyout then
 			TSM:DecodeItemData(itemID)
 			local priceChangeText = ""
 			if TSM.db.profile.showPriceChange and TSM.data[itemID].dbMinBuyoutScans then
-				local percentChange = TSM.Data:CalculatePriceChange(minBuyout, TSM.data[itemID].dbMinBuyoutScans, TSM.db.profile.priceChangeDays)
+				local percentChange = TSM.Data:CalculatePriceChange(dbMinBuyout, TSM.data[itemID].dbMinBuyoutScans, TSM.db.profile.priceChangeDays)
 				if percentChange then
 					local arrow, colorCode = TSM.Data:GetPriceChangeIndicator(percentChange)
 					priceChangeText = format(" %s%s (%.1f%%)|r", colorCode, arrow, percentChange)
@@ -295,15 +318,15 @@ function TSM:GetTooltip(itemString, quantity)
 			if quantity then
 				if moneyCoinsTooltip then
 					if IsShiftKeyDown() then
-						tinsert(text, { left = "  " .. format(L["Min Buyout (Cheapest) x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(minBuyout * quantity, "|cffffffff", true) .. priceChangeText })
+						tinsert(text, { left = "  " .. format(L["DB Min Buyout (Avg 50) x%s:"], quantity), right = TSMAPI:FormatTextMoneyIcon(dbMinBuyout * quantity, "|cffffffff", true) .. priceChangeText })
 					else
-						tinsert(text, { left = "  " .. L["Min Buyout (Cheapest):"], right = TSMAPI:FormatTextMoneyIcon(minBuyout, "|cffffffff", true) .. priceChangeText })
+						tinsert(text, { left = "  " .. L["DB Min Buyout (Avg 50):"], right = TSMAPI:FormatTextMoneyIcon(dbMinBuyout, "|cffffffff", true) .. priceChangeText })
 					end
 				else
 					if IsShiftKeyDown() then
-						tinsert(text, { left = "  " .. format(L["Min Buyout (Cheapest) x%s:"], quantity), right = TSMAPI:FormatTextMoney(minBuyout * quantity, "|cffffffff", true) .. priceChangeText })
+						tinsert(text, { left = "  " .. format(L["DB Min Buyout (Avg 50) x%s:"], quantity), right = TSMAPI:FormatTextMoney(dbMinBuyout * quantity, "|cffffffff", true) .. priceChangeText })
 					else
-						tinsert(text, { left = "  " .. L["Min Buyout (Cheapest):"], right = TSMAPI:FormatTextMoney(minBuyout, "|cffffffff", true) .. priceChangeText })
+						tinsert(text, { left = "  " .. L["DB Min Buyout (Avg 50):"], right = TSMAPI:FormatTextMoney(dbMinBuyout, "|cffffffff", true) .. priceChangeText })
 					end
 				end
 			end
