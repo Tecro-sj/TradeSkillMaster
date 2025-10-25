@@ -68,6 +68,7 @@ function GUI:OnEnable()
 	TSMAPI:RegisterForBagChange(function()
 		TSMAPI:CreateTimeDelay("craftingProfessionUpdateThrottle", 0.05, GUI.UpdateProfessionsTabST)
 		TSMAPI:CreateTimeDelay("craftingQueueUpdateThrottle", 0.1, GUI.UpdateQueue)
+		TSMAPI:CreateTimeDelay("craftingTaskListUpdateThrottle", 0.1, GUI.UpdateTaskList)
 		TSMAPI:CreateTimeDelay("gatheringUpdateThrottle", 0.3, GUI.UpdateGathering)
 	end)
 
@@ -2955,9 +2956,15 @@ function GUI:CreateTaskListWindow()
 				TSM.db.realm.queueStatus.collapsed[data.profession] = not TSM.db.realm.queueStatus.collapsed[data.profession]
 			end
 			GUI:UpdateTaskList()
-		elseif data.index and data.spellID then
+		elseif data.spellID and data.canCraft and data.canCraft > 0 then
 			-- Start crafting when clicking on a queued craft
-			GUI:CastTradeSkill(data.index, min(data.canCraft, data.numQueued), data.velName)
+			if data.index then
+				GUI:CastTradeSkill(data.index, min(data.canCraft, data.numQueued), data.velName)
+				-- Update task list after a short delay to reflect changes
+				TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterCraft", 0.5, GUI.UpdateTaskList)
+			else
+				TSM:Print(L["Please open the profession window first."])
+			end
 		end
 	end
 
