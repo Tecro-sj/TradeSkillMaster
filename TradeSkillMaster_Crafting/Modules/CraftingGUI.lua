@@ -2809,15 +2809,14 @@ function GUI:CreateTaskListWindow()
 	local frame = TSMAPI:CreateMovableFrame("TSMCraftingTaskList", frameDefaults)
 	frame:SetResizable(true)
 	frame:SetMinResize(200, 150)
-	TSMAPI.Design:SetFrameBackdropColor(frame)
-	-- Remove top border line
+	-- Clean backdrop without borders
 	frame:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8", edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=0})
 	if TSM.db.profile.design and TSM.db.profile.design.frameColors and TSM.db.profile.design.frameColors.frameBG then
 		frame:SetBackdropColor(unpack(TSM.db.profile.design.frameColors.frameBG.backdrop))
-		frame:SetBackdropBorderColor(unpack(TSM.db.profile.design.frameColors.frameBG.border))
+		frame:SetBackdropBorderColor(0, 0, 0, 0)
 	else
-		frame:SetBackdropColor(29, 26, 24, 1)
-		frame:SetBackdropBorderColor(31, 31, 31, 1)
+		frame:SetBackdropColor(18/255, 18/255, 18/255, 1)
+		frame:SetBackdropBorderColor(0, 0, 0, 0)
 	end
 	tinsert(UISpecialFrames, "TSMCraftingTaskList")
 	GUI.taskListFrame = frame
@@ -2845,12 +2844,13 @@ function GUI:CreateTaskListWindow()
 	content:SetPoint("BOTTOMRIGHT")
 	frame.content = content
 
-	-- Queue ScrollingTable - upper third
+	-- Queue ScrollingTable - upper half (resizable)
 	local queueContainer = CreateFrame("Frame", nil, frame.content)
 	queueContainer:SetPoint("TOPLEFT", 5, -5)
 	queueContainer:SetPoint("TOPRIGHT", -5, -5)
-	queueContainer:SetHeight(180)
+	queueContainer:SetHeight(250)
 	TSMAPI.Design:SetFrameColor(queueContainer)
+	frame.queueContainer = queueContainer
 
 	local queueCols = {
 		{ name = L["Craft Queue"], width = 1, align = "Left" },
@@ -2953,16 +2953,47 @@ function GUI:CreateTaskListWindow()
 	frame.queueST:SetData({})
 	frame.queueST:DisableSelection(true)
 
-	-- Separator line
-	TSMAPI.GUI:CreateHorizontalLine(frame.content, -260)
+	-- Resizable separator between tables
+	local separator = CreateFrame("Frame", nil, frame.content)
+	separator:SetPoint("TOPLEFT", queueContainer, "BOTTOMLEFT", 0, -2)
+	separator:SetPoint("TOPRIGHT", queueContainer, "BOTTOMRIGHT", 0, -2)
+	separator:SetHeight(10)
+	separator:EnableMouse(true)
+	separator:SetScript("OnEnter", function(self)
+		self:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8"})
+		self:SetBackdropColor(0.3, 0.3, 0.3, 0.5)
+		SetCursor("Interface\\CURSOR\\UI-Cursor-SizeUp")
+	end)
+	separator:SetScript("OnLeave", function(self)
+		self:SetBackdrop(nil)
+		ResetCursor()
+	end)
+	separator:SetScript("OnMouseDown", function(self)
+		self.isResizing = true
+		self.startY = select(2, GetCursorPosition()) / self:GetEffectiveScale()
+		self.startHeight = queueContainer:GetHeight()
+	end)
+	separator:SetScript("OnMouseUp", function(self)
+		self.isResizing = false
+	end)
+	separator:SetScript("OnUpdate", function(self)
+		if self.isResizing then
+			local currentY = select(2, GetCursorPosition()) / self:GetEffectiveScale()
+			local deltaY = currentY - self.startY
+			local newHeight = math.max(100, math.min(frame:GetHeight() - 200, self.startHeight + deltaY))
+			queueContainer:SetHeight(newHeight)
+		end
+	end)
+	frame.separator = separator
 
 	-- Materials by craft table - fills remaining space
 	local matContainer = CreateFrame("Frame", nil, frame.content)
-	matContainer:SetPoint("TOPLEFT", queueContainer, "BOTTOMLEFT", 0, -15)
-	matContainer:SetPoint("TOPRIGHT", queueContainer, "BOTTOMRIGHT", 0, -15)
+	matContainer:SetPoint("TOPLEFT", separator, "BOTTOMLEFT", 0, -5)
+	matContainer:SetPoint("TOPRIGHT", separator, "BOTTOMRIGHT", 0, -5)
 	matContainer:SetPoint("BOTTOMLEFT", 5, 110)
 	matContainer:SetPoint("BOTTOMRIGHT", -5, 110)
 	TSMAPI.Design:SetFrameColor(matContainer)
+	frame.matContainer = matContainer
 
 	local matCols = {
 		{ name = L["Material Name"], width = 0.69, align = "Left" },
@@ -2991,9 +3022,6 @@ function GUI:CreateTaskListWindow()
 	frame.matST:SetData({})
 	frame.matST:DisableSelection(true)
 
-	-- Separator line
-	TSMAPI.GUI:CreateHorizontalLine(frame.content, 93)
-
 	-- Profit/Cost labels
 	local profitLabel = TSMAPI.GUI:CreateLabel(frame.content, "medium")
 	profitLabel:SetPoint("BOTTOMLEFT", 5, 85)
@@ -3019,9 +3047,6 @@ function GUI:CreateTaskListWindow()
 	end
 	profitLabel:SetAmounts("---", "---")
 	frame.profitLabel = profitLabel
-
-	-- Separator line
-	TSMAPI.GUI:CreateHorizontalLine(frame.content, 28)
 
 	-- Clear Queue button
 	local btn = TSMAPI.GUI:CreateButton(frame.content, 14)
