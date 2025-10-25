@@ -202,23 +202,23 @@ function TSM:GetTooltip(itemString)
 			if itemValue then
 				if total > 0 then
 					local goldValue = floor((total * itemValue) / COPPER_PER_GOLD)
-					totalGold = " [" .. goldValue .. "g]"
+					totalGold = " [|cffffffff" .. goldValue .. "|r|cffffd700g|r]"
 				end
 				if bags > 0 then
 					local goldValue = floor((bags * itemValue) / COPPER_PER_GOLD)
-					bagGold = " [" .. goldValue .. "g]"
+					bagGold = " [|cffffffff" .. goldValue .. "|r|cffffd700g|r]"
 				end
 				if bank > 0 then
 					local goldValue = floor((bank * itemValue) / COPPER_PER_GOLD)
-					bankGold = " [" .. goldValue .. "g]"
+					bankGold = " [|cffffffff" .. goldValue .. "|r|cffffd700g|r]"
 				end
 				if auctions > 0 then
 					local goldValue = floor((auctions * itemValue) / COPPER_PER_GOLD)
-					auctionGold = " [" .. goldValue .. "g]"
+					auctionGold = " [|cffffffff" .. goldValue .. "|r|cffffd700g|r]"
 				end
 				if mail > 0 then
 					local goldValue = floor((mail * itemValue) / COPPER_PER_GOLD)
-					mailGold = " [" .. goldValue .. "g]"
+					mailGold = " [|cffffffff" .. goldValue .. "|r|cffffd700g|r]"
 				end
 			end
 
@@ -238,7 +238,7 @@ function TSM:GetTooltip(itemString)
 				local gbankGold = ""
 				if itemValue and gbank > 0 then
 					local goldValue = floor((gbank * itemValue) / COPPER_PER_GOLD)
-					gbankGold = " [" .. goldValue .. "g]"
+					gbankGold = " [|cffffffff" .. goldValue .. "|r|cffffd700g|r]"
 				end
 
 				if gbank > 0 then
@@ -254,7 +254,7 @@ function TSM:GetTooltip(itemString)
 		-- Add total gold value
 		if itemValue and grandTotal > 0 then
 			local goldValue = floor((grandTotal * itemValue) / COPPER_PER_GOLD)
-			local grandTotalGold = " [" .. goldValue .. "g]"
+			local grandTotalGold = " [|cffffffff" .. goldValue .. "|r|cffffd700g|r]"
 			grandTotalText = grandTotalText .. grandTotalGold
 		end
 
