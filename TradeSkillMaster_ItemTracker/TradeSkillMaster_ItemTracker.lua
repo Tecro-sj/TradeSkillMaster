@@ -165,6 +165,10 @@ function TSM:GetTooltip(itemString)
 	local text = {}
 	local grandTotal = 0
 
+	-- Get market value for gold calculations
+	local marketValue = TSM.db.profile.marketValue or "DBMarket"
+	local itemValue = TSMAPI:GetItemValue(itemString, marketValue)
+
 	if TSM.db.global.tooltip == "simple" then
 		local player, alts = TSM:GetPlayerTotal(itemString)
 		local guild = TSM:GetGuildTotal(itemString)
@@ -188,8 +192,33 @@ function TSM:GetTooltip(itemString)
 			local mailText = "|cffffffff" .. mail .. "|r"
 			local totalText = "|cffffffff" .. total .. "|r"
 
+			-- Calculate gold values if itemValue exists
+			local totalGold = ""
+			local bagGold = ""
+			local bankGold = ""
+			local auctionGold = ""
+			local mailGold = ""
+
+			if itemValue then
+				if total > 0 then
+					totalGold = " [" .. TSMAPI:FormatTextMoney(total * itemValue, nil, nil, true) .. "]"
+				end
+				if bags > 0 then
+					bagGold = " [" .. TSMAPI:FormatTextMoney(bags * itemValue, nil, nil, true) .. "]"
+				end
+				if bank > 0 then
+					bankGold = " [" .. TSMAPI:FormatTextMoney(bank * itemValue, nil, nil, true) .. "]"
+				end
+				if auctions > 0 then
+					auctionGold = " [" .. TSMAPI:FormatTextMoney(auctions * itemValue, nil, nil, true) .. "]"
+				end
+				if mail > 0 then
+					mailGold = " [" .. TSMAPI:FormatTextMoney(mail * itemValue, nil, nil, true) .. "]"
+				end
+			end
+
 			if total > 0 then
-				tinsert(text, { left = format("  %s:", name), right = format(L["%s (%s bags, %s bank, %s AH, %s mail)"], "|cffffffff" .. totalText, "|cffffffff" .. bagText, "|cffffffff" .. bankText, "|cffffffff" .. auctionText, "|cffffffff" .. mailText) })
+				tinsert(text, { left = format("  %s:", name), right = format(L["%s (%s bags, %s bank, %s AH, %s mail)"], "|cffffffff" .. totalText .. totalGold, "|cffffffff" .. bagText .. bagGold, "|cffffffff" .. bankText .. bankGold, "|cffffffff" .. auctionText .. auctionGold, "|cffffffff" .. mailText .. mailGold) })
 			end
 		end
 
@@ -200,15 +229,29 @@ function TSM:GetTooltip(itemString)
 
 				local gbankText = "|cffffffff" .. (gbank) .. "|r"
 
+				-- Calculate gold value for guild bank
+				local gbankGold = ""
+				if itemValue and gbank > 0 then
+					gbankGold = " [" .. TSMAPI:FormatTextMoney(gbank * itemValue, nil, nil, true) .. "]"
+				end
+
 				if gbank > 0 then
-					tinsert(text, { left = format("  %s:", name), right = format(L["%s in guild bank"], gbankText) })
+					tinsert(text, { left = format("  %s:", name), right = format(L["%s in guild bank"], gbankText .. gbankGold) })
 				end
 			end
 		end
 	end
 
 	if #text > 0 then
-		tinsert(text, 1, { left = "|cffffff00" .. "TSM ItemTracker:", right = format(L["%s item(s) total"], "|cffffffff" .. grandTotal .. "|r") })
+		local grandTotalText = "|cffffffff" .. grandTotal .. "|r"
+
+		-- Add total gold value
+		if itemValue and grandTotal > 0 then
+			local grandTotalGold = " [" .. TSMAPI:FormatTextMoney(grandTotal * itemValue, nil, nil, true) .. "]"
+			grandTotalText = grandTotalText .. grandTotalGold
+		end
+
+		tinsert(text, 1, { left = "|cffffff00" .. "TSM ItemTracker:", right = format(L["%s item(s) total"], grandTotalText) })
 	end
 
 	return text
