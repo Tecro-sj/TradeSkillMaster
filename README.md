@@ -6,7 +6,7 @@
 
 -More Price Sources (DBMinBuyOut: is now a DB with a 7 Day History. MinBuy: shows the avg from the first 50 auctions, from the last scan. Min BuyOut: Shows the price of the cheapest item, from the last scan)
 
--Shopping "/exact" scans can be setup in options (how many sidts you want too scan, default 0 (all))
+-Shopping "/exact" scans can be setup in options (how many sites you want too scan, default 0 (all))
 
 -Quick scan (experimental)
 
