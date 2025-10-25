@@ -249,7 +249,7 @@ function Data:UpdateMarketValue(itemData)
 	itemData.marketValue = Data:GetMarketValue(itemData.scans)
 end
 
--- Updates DBMinBuyout (historical average of cheapest 50 auctions)
+-- Updates DBMinBuyout (historical average of cheapest 50 auctions over 7 days)
 function Data:UpdateDBMinBuyout(itemData)
 	if not itemData.dbMinBuyoutScans then return end
 
@@ -257,7 +257,7 @@ function Data:UpdateDBMinBuyout(itemData)
 	local dbMinBuyoutScans = CopyTable(itemData.dbMinBuyoutScans)
 	itemData.dbMinBuyoutScans = {}
 
-	for i=0, 14 do
+	for i=0, 7 do
 		if i <= TSM.MAX_AVG_DAY then
 			if type(dbMinBuyoutScans[day-i]) == "number" then
 				dbMinBuyoutScans[day-i] = {avg=dbMinBuyoutScans[day-i], count=1}
@@ -277,9 +277,9 @@ function Data:UpdateDBMinBuyout(itemData)
 		end
 	end
 
-	-- Calculate DBMinBuyout (weighted average similar to DBMarket)
+	-- Calculate DBMinBuyout (weighted average similar to DBMarket, but only 7 days)
 	local total, totalWeight = 0, 0
-	for i=0, 14 do
+	for i=0, 7 do
 		local value
 		if type(itemData.dbMinBuyoutScans[day-i]) == "table" then
 			value = itemData.dbMinBuyoutScans[day-i].avg
