@@ -3105,15 +3105,19 @@ function GUI:CreateTaskListWindow()
 	collapseBtn:SetScript("OnClick", function()
 		if frame.isCollapsed then
 			-- Expand
+			local _, top = frame:GetTop()
 			frame:SetHeight(expandedHeight)
+			frame:SetPoint("TOP", UIParent, "BOTTOM", 0, top)
 			frame.content:Show()
 			sizer:Show()
 			frame.isCollapsed = false
 			collapseBtn:SetText("-")
 		else
 			-- Collapse
+			local _, top = frame:GetTop()
 			expandedHeight = frame:GetHeight()
 			frame:SetHeight(collapsedHeight)
+			frame:SetPoint("TOP", UIParent, "BOTTOM", 0, top)
 			frame.content:Hide()
 			sizer:Hide()
 			frame.isCollapsed = true
