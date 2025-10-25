@@ -2803,7 +2803,7 @@ function GUI:CreateTaskListWindow()
 		x = 100,
 		y = 100,
 		width = 280,
-		height = 530,
+		height = 290,
 		scale = 1,
 	}
 	local frame = TSMAPI:CreateMovableFrame("TSMCraftingTaskList", frameDefaults)
