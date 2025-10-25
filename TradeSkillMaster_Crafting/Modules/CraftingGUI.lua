@@ -2800,7 +2800,7 @@ function GUI:CreateTaskListWindow()
 	end
 
 	local frameDefaults = {
-		x = 500,
+		x = 100,
 		y = 450,
 		width = 280,
 		height = 530,
