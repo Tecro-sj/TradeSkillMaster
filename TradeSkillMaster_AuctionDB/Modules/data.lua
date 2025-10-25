@@ -185,41 +185,6 @@ function Data:CalculateMinBuy(data)
 	return floor(total / numToAverage + 0.5)
 end
 
---- Calculate DBMinBuyout (average of cheapest 50 auctions)
--- @param data The market scan data with records table
--- @return The average price of the cheapest 50 auctions, or nil if no data
-function Data:CalculateDBMinBuyoutValue(data)
-	local records = data.records
-
-	if type(records) ~= "table" or #records <= 0 then
-		return nil
-	end
-
-	-- Sort records by price per item (ascending)
-	local sortedPrices = {}
-	for _, record in ipairs(records) do
-		if type(record) == "table" then
-			-- New format: {stack_size, buyout_per_item}
-			tinsert(sortedPrices, record[2])
-		else
-			-- Old format: just the price
-			tinsert(sortedPrices, record)
-		end
-	end
-
-	tsort(sortedPrices)
-
-	-- Take the cheapest 50 auctions (or fewer if less available)
-	local numToAverage = min(50, #sortedPrices)
-	local total = 0
-
-	for i = 1, numToAverage do
-		total = total + sortedPrices[i]
-	end
-
-	return floor(total / numToAverage + 0.5)
-end
-
 -- Updates all the market values
 function Data:UpdateMarketValue(itemData)
 	local day = Data:GetDay()
@@ -249,30 +214,30 @@ function Data:UpdateMarketValue(itemData)
 	itemData.marketValue = Data:GetMarketValue(itemData.scans)
 end
 
--- Updates DBMinBuyout (historical average of cheapest 50 auctions)
+-- Updates DBMinBuyout (historical average of MinBuy values)
 function Data:UpdateDBMinBuyout(itemData)
-	if not itemData.dbMinBuyoutScans then return end
+	if not itemData.minBuyScans then return end
 
 	local day = Data:GetDay()
-	local dbMinBuyoutScans = CopyTable(itemData.dbMinBuyoutScans)
-	itemData.dbMinBuyoutScans = {}
+	local minBuyScans = CopyTable(itemData.minBuyScans)
+	itemData.minBuyScans = {}
 
 	for i=0, 14 do
 		if i <= TSM.MAX_AVG_DAY then
-			if type(dbMinBuyoutScans[day-i]) == "number" then
-				dbMinBuyoutScans[day-i] = {avg=dbMinBuyoutScans[day-i], count=1}
+			if type(minBuyScans[day-i]) == "number" then
+				minBuyScans[day-i] = {avg=minBuyScans[day-i], count=1}
 			end
-			itemData.dbMinBuyoutScans[day-i] = dbMinBuyoutScans[day-i] and CopyTable(dbMinBuyoutScans[day-i])
+			itemData.minBuyScans[day-i] = minBuyScans[day-i] and CopyTable(minBuyScans[day-i])
 		else
-			local dayScans = dbMinBuyoutScans[day-i]
+			local dayScans = minBuyScans[day-i]
 			if type(dayScans) == "table" then
 				if dayScans.avg then
-					itemData.dbMinBuyoutScans[day-i] = dayScans.avg
+					itemData.minBuyScans[day-i] = dayScans.avg
 				else
-					itemData.dbMinBuyoutScans[day-i] = Data:GetAverage(dayScans)
+					itemData.minBuyScans[day-i] = Data:GetAverage(dayScans)
 				end
 			elseif dayScans then
-				itemData.dbMinBuyoutScans[day-i] = dayScans
+				itemData.minBuyScans[day-i] = dayScans
 			end
 		end
 	end
@@ -281,10 +246,10 @@ function Data:UpdateDBMinBuyout(itemData)
 	local total, totalWeight = 0, 0
 	for i=0, 14 do
 		local value
-		if type(itemData.dbMinBuyoutScans[day-i]) == "table" then
-			value = itemData.dbMinBuyoutScans[day-i].avg
+		if type(itemData.minBuyScans[day-i]) == "table" then
+			value = itemData.minBuyScans[day-i].avg
 		else
-			value = itemData.dbMinBuyoutScans[day-i]
+			value = itemData.minBuyScans[day-i]
 		end
 
 		if value and value > 0 then
@@ -294,7 +259,7 @@ function Data:UpdateDBMinBuyout(itemData)
 	end
 
 	if totalWeight > 0 then
-		itemData.dbMinBuyout = floor(total / totalWeight + 0.5)
+		itemData.minBuyout = floor(total / totalWeight + 0.5)
 	end
 end
 
@@ -538,22 +503,21 @@ function Data:ProcessData(scanData, groupItems, verifyNewAlgorithm)
 				local minBuy = Data:CalculateMinBuy(data)
 				TSM.data[itemID].minBuy = minBuy
 
-				-- Calculate and store DBMinBuyout (average of cheapest 50 auctions)
-				local dbMinBuyoutValue = Data:CalculateDBMinBuyoutValue(data)
-				if dbMinBuyoutValue and dbMinBuyoutValue > 0 then
-					TSM.data[itemID].dbMinBuyoutScans = TSM.data[itemID].dbMinBuyoutScans or {}
-					local dbMinBuyoutScans = TSM.data[itemID].dbMinBuyoutScans
-					dbMinBuyoutScans[day] = dbMinBuyoutScans[day] or {avg=0, count=0}
-					if type(dbMinBuyoutScans[day]) == "number" then
-						dbMinBuyoutScans[day] = {dbMinBuyoutScans[day]}
+				-- Store MinBuy in historical database for DBMinBuyout
+				if minBuy and minBuy > 0 then
+					TSM.data[itemID].minBuyScans = TSM.data[itemID].minBuyScans or {}
+					local minBuyScans = TSM.data[itemID].minBuyScans
+					minBuyScans[day] = minBuyScans[day] or {avg=0, count=0}
+					if type(minBuyScans[day]) == "number" then
+						minBuyScans[day] = {minBuyScans[day]}
 					end
-					dbMinBuyoutScans[day].avg = dbMinBuyoutScans[day].avg or 0
-					dbMinBuyoutScans[day].count = dbMinBuyoutScans[day].count or 0
-					if #dbMinBuyoutScans[day] > 0 then
-						dbMinBuyoutScans[day] = Data:ConvertScansToAvg(dbMinBuyoutScans[day])
+					minBuyScans[day].avg = minBuyScans[day].avg or 0
+					minBuyScans[day].count = minBuyScans[day].count or 0
+					if #minBuyScans[day] > 0 then
+						minBuyScans[day] = Data:ConvertScansToAvg(minBuyScans[day])
 					end
-					dbMinBuyoutScans[day].avg = floor((dbMinBuyoutScans[day].avg * dbMinBuyoutScans[day].count + dbMinBuyoutValue) / (dbMinBuyoutScans[day].count + 1) + 0.5)
-					dbMinBuyoutScans[day].count = dbMinBuyoutScans[day].count + 1
+					minBuyScans[day].avg = floor((minBuyScans[day].avg * minBuyScans[day].count + minBuy) / (minBuyScans[day].count + 1) + 0.5)
+					minBuyScans[day].count = minBuyScans[day].count + 1
 				end
 
 				Data:UpdateMarketValue(TSM.data[itemID])
