@@ -28,8 +28,9 @@ L["Any items in the AuctionDB database that contain the search phrase in their n
 L["Are you sure you want to clear your AuctionDB data?"] = true
 L["Ascending"] = true
 L["AuctionDB - Market Value"] = true
-L["AuctionDB - Minimum Buyout"] = true
-L["AuctionDB - Minimum Buy (Avg 50)"] = true
+L["AuctionDB - DB Min Buyout (Avg 50)"] = true
+L["AuctionDB - Min Buyout (Cheapest)"] = true
+L["AuctionDB - Min Buy (Avg 50)"] = true
 L["Min Buy:"] = true
 L["Min Buy x%s:"] = true
 L["Display MinBuy (avg of 50 cheapest) in tooltip."] = true

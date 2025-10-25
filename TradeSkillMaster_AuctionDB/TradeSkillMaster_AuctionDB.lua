@@ -67,8 +67,9 @@ end
 function TSM:RegisterModule()
 	TSM.priceSources = {
 		{ key = "DBMarket", label = L["AuctionDB - Market Value"], callback = "GetMarketValue" },
-		{ key = "DBMinBuyout", label = L["AuctionDB - Minimum Buyout"], callback = "GetMinBuyout" },
-		{ key = "MinBuy", label = L["AuctionDB - Minimum Buy (Avg 50)"], callback = "GetMinBuy" },
+		{ key = "DBMinBuyout", label = L["AuctionDB - DB Min Buyout (Avg 50)"], callback = "GetDBMinBuyout" },
+		{ key = "MinBuyout", label = L["AuctionDB - Min Buyout (Cheapest)"], callback = "GetMinBuyout" },
+		{ key = "MinBuy", label = L["AuctionDB - Min Buy (Avg 50)"], callback = "GetMinBuy" },
 	}
 	TSM.icons = {
 		{ side = "module", desc = "AuctionDB", slashCommand = "auctiondb", callback = "Config:Load", icon = "Interface\\Icons\\Inv_Misc_Platnumdisks" },
@@ -526,8 +527,8 @@ function TSM:EncodeItemData(itemID, tbl)
 	tbl = tbl or TSM.data
 	local data = tbl[itemID]
 	if data and data.marketValue then
-		local encodedMinBuyScans = (data.minBuyScans and encodeScans(data.minBuyScans)) or "~"
-		data.encoded = strjoin(",", encode(0), encode(data.marketValue), encode(data.lastScan), encode(0), encode(data.minBuyout), encodeScans(data.scans), encode(data.quantity), encode(data.minBuy), encodedMinBuyScans)
+		local encodedDBMinBuyoutScans = (data.dbMinBuyoutScans and encodeScans(data.dbMinBuyoutScans)) or "~"
+		data.encoded = strjoin(",", encode(0), encode(data.marketValue), encode(data.lastScan), encode(0), encode(data.minBuyout), encodeScans(data.scans), encode(data.quantity), encode(data.minBuy), encodedDBMinBuyoutScans, encode(data.dbMinBuyout))
 	end
 end
 
@@ -535,14 +536,15 @@ function TSM:DecodeItemData(itemID, tbl)
 	tbl = tbl or TSM.data
 	local data = tbl[itemID]
 	if data and data.encoded and not data.marketValue then
-		local a, b, c, d, e, f, g, h, i = (","):split(data.encoded)
+		local a, b, c, d, e, f, g, h, i, j = (","):split(data.encoded)
 		data.marketValue = decode(b)
 		data.lastScan = decode(c)
 		data.minBuyout = decode(e)
 		data.scans = decodeScans(f)
 		data.quantity = decode(g)
 		data.minBuy = h and decode(h) or nil
-		data.minBuyScans = i and decodeScans(i) or {}
+		data.dbMinBuyoutScans = i and decodeScans(i) or {}
+		data.dbMinBuyout = j and decode(j) or nil
 	end
 end
 
@@ -625,4 +627,16 @@ function TSM:GetMinBuy(itemID)
 	if not itemID or not TSM.data[itemID] then return end
 	TSM:DecodeItemData(itemID)
 	return TSM.data[itemID].minBuy
+end
+
+function TSM:GetDBMinBuyout(itemID)
+	if itemID and not tonumber(itemID) then
+		itemID = TSMAPI:GetItemID(itemID)
+	end
+	if not itemID or not TSM.data[itemID] then return end
+	TSM:DecodeItemData(itemID)
+	if not TSM.data[itemID].dbMinBuyout or TSM.data[itemID].dbMinBuyout == 0 then
+		TSM.Data:UpdateDBMinBuyout(TSM.data[itemID])
+	end
+	return TSM.data[itemID].dbMinBuyout ~= 0 and TSM.data[itemID].dbMinBuyout or nil
 end
