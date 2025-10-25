@@ -67,7 +67,7 @@ end
 function TSM:RegisterModule()
 	TSM.priceSources = {
 		{ key = "DBMarket", label = L["AuctionDB - Market Value"], callback = "GetMarketValue" },
-		{ key = "DBMinBuyout", label = L["AuctionDB - DB Min Buyout (Avg 5)"], callback = "GetDBMinBuyout" },
+		{ key = "DBMinBuyout", label = L["AuctionDB - DB Min Buyout (Avg 50)"], callback = "GetDBMinBuyout" },
 		{ key = "MinBuyout", label = L["AuctionDB - Min Buyout (Cheapest)"], callback = "GetMinBuyout" },
 		{ key = "MinBuy", label = L["AuctionDB - Min Buy (Avg 50)"], callback = "GetMinBuy" },
 	}

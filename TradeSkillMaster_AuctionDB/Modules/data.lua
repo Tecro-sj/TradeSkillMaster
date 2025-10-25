@@ -185,9 +185,9 @@ function Data:CalculateMinBuy(data)
 	return floor(total / numToAverage + 0.5)
 end
 
---- Calculate DBMinBuyout (average of cheapest 5 auctions)
+--- Calculate DBMinBuyout (average of cheapest 50 auctions)
 -- @param data The market scan data with records table
--- @return The average price of the cheapest 5 auctions, or nil if no data
+-- @return The average price of the cheapest 50 auctions, or nil if no data
 function Data:CalculateDBMinBuyoutValue(data)
 	local records = data.records
 
@@ -209,8 +209,8 @@ function Data:CalculateDBMinBuyoutValue(data)
 
 	tsort(sortedPrices)
 
-	-- Take the cheapest 5 auctions (or fewer if less available)
-	local numToAverage = min(5, #sortedPrices)
+	-- Take the cheapest 50 auctions (or fewer if less available)
+	local numToAverage = min(50, #sortedPrices)
 	local total = 0
 
 	for i = 1, numToAverage do
@@ -249,7 +249,7 @@ function Data:UpdateMarketValue(itemData)
 	itemData.marketValue = Data:GetMarketValue(itemData.scans)
 end
 
--- Updates DBMinBuyout (historical average of cheapest 5 auctions)
+-- Updates DBMinBuyout (historical average of cheapest 50 auctions)
 function Data:UpdateDBMinBuyout(itemData)
 	if not itemData.dbMinBuyoutScans then return end
 
@@ -538,7 +538,7 @@ function Data:ProcessData(scanData, groupItems, verifyNewAlgorithm)
 				local minBuy = Data:CalculateMinBuy(data)
 				TSM.data[itemID].minBuy = minBuy
 
-				-- Calculate and store DBMinBuyout (average of cheapest 5 auctions)
+				-- Calculate and store DBMinBuyout (average of cheapest 50 auctions)
 				local dbMinBuyoutValue = Data:CalculateDBMinBuyoutValue(data)
 				if dbMinBuyoutValue and dbMinBuyoutValue > 0 then
 					TSM.data[itemID].dbMinBuyoutScans = TSM.data[itemID].dbMinBuyoutScans or {}
