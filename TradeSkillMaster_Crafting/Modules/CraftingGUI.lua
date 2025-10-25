@@ -1884,7 +1884,7 @@ function GUI:UpdateQueue()
 							index = craftIndex,
 							velName = velName,
 							profit = select(3, TSM.Cost:GetCraftPrices(spellID)),
-							profession = GetTradeSkillLine(),
+							profession = TSM.db.realm.crafts[spellID].profession,
 						}
 						tinsert(craftRows, row)
 					end
