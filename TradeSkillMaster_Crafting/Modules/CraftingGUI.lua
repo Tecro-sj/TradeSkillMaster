@@ -1339,6 +1339,7 @@ function GUI:CreateCraftInfoFrame(parent)
 			end
 		end
 		GUI:UpdateQueue()
+		GUI:UpdateTaskList()
 	end)
 	local color = TSMAPI.Design:GetInlineColor("link")
 	local tooltipLines = {
