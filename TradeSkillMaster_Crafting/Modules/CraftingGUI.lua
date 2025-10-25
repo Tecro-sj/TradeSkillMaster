@@ -2826,7 +2826,7 @@ function GUI:CreateTaskListWindow()
 	title:SetFont(TSMAPI.Design:GetContentFont(), 18)
 	TSMAPI.Design:SetWidgetLabelColor(title)
 	title:SetPoint("TOP", frame, 0, -3)
-	title:SetText(L["TSM Crafting - Task List"])
+	title:SetText(L["Task List"])
 
 	-- Close button
 	local closeBtn = TSMAPI.GUI:CreateButton(frame, 18)
