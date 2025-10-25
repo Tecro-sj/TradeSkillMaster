@@ -2990,8 +2990,8 @@ function GUI:CreateTaskListWindow()
 	local matContainer = CreateFrame("Frame", nil, frame.content)
 	matContainer:SetPoint("TOPLEFT", separator, "BOTTOMLEFT", 0, -5)
 	matContainer:SetPoint("TOPRIGHT", separator, "BOTTOMRIGHT", 0, -5)
-	matContainer:SetPoint("BOTTOMLEFT", 5, 110)
-	matContainer:SetPoint("BOTTOMRIGHT", -5, 110)
+	matContainer:SetPoint("BOTTOMLEFT", 5, 70)
+	matContainer:SetPoint("BOTTOMRIGHT", -5, 70)
 	TSMAPI.Design:SetFrameColor(matContainer)
 	frame.matContainer = matContainer
 
@@ -3024,8 +3024,8 @@ function GUI:CreateTaskListWindow()
 
 	-- Profit/Cost labels
 	local profitLabel = TSMAPI.GUI:CreateLabel(frame.content, "medium")
-	profitLabel:SetPoint("BOTTOMLEFT", 5, 85)
-	profitLabel:SetPoint("BOTTOMRIGHT", -35, 85)
+	profitLabel:SetPoint("BOTTOMLEFT", 5, 45)
+	profitLabel:SetPoint("BOTTOMRIGHT", -35, 45)
 	profitLabel:SetJustifyH("LEFT")
 	profitLabel:SetJustifyV("BOTTOM")
 	profitLabel.SetAmounts = function(self, cost, profit)
