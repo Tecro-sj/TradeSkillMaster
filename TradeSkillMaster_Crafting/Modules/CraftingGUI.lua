@@ -2997,12 +2997,40 @@ function GUI:CreateTaskListWindow()
 			else
 				-- Automatically open the profession window
 				if data.profession then
-					if data.profession == "Mining" then
-						CastSpellByName("Smelting")
+					local currentProfession = GetTradeSkillLine()
+					-- Check if the correct profession window is open
+					if currentProfession and currentProfession == data.profession then
+						-- The window is already open with the correct profession, but item is filtered
+						-- Close and reopen to clear filters
+						CloseTradeSkill()
+						TSMAPI:CreateTimeDelay("reopenProfessionWindow", 0.1, function()
+							if data.profession == "Mining" then
+								CastSpellByName("Smelting")
+							else
+								CastSpellByName(data.profession)
+							end
+							TSM:Print(L["Clearing filters and reopening profession window..."])
+						end)
+					elseif currentProfession then
+						-- Wrong profession is open, close and open the correct one
+						CloseTradeSkill()
+						TSMAPI:CreateTimeDelay("reopenProfessionWindow", 0.1, function()
+							if data.profession == "Mining" then
+								CastSpellByName("Smelting")
+							else
+								CastSpellByName(data.profession)
+							end
+							TSM:Print(L["Opening profession window..."])
+						end)
 					else
-						CastSpellByName(data.profession)
+						-- No profession window is open
+						if data.profession == "Mining" then
+							CastSpellByName("Smelting")
+						else
+							CastSpellByName(data.profession)
+						end
+						TSM:Print(L["Opening profession window..."])
 					end
-					TSM:Print(L["Opening profession window..."])
 				else
 					TSM:Print(L["Please open the profession window first."])
 				end
