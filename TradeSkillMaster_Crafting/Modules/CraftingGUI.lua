@@ -2996,29 +2996,13 @@ function GUI:CreateTaskListWindow()
 				-- Update task list after a short delay to reflect changes
 				TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterCraft", 0.5, GUI.UpdateTaskList)
 			else
-				-- Automatically open the profession window
+				-- Profession window needs to be opened
 				if data.profession then
 					local currentProfession = GetTradeSkillLine()
-					-- Check if the correct profession window is open
 					if currentProfession and currentProfession ~= data.profession then
-						-- Wrong profession is open, close and open the correct one
-						CloseTradeSkill()
-						TSMAPI:CreateTimeDelay("reopenProfessionWindow", 0.1, function()
-							if data.profession == "Mining" then
-								CastSpellByName("Smelting")
-							else
-								CastSpellByName(data.profession)
-							end
-							TSM:Print(L["Opening profession window..."])
-						end)
+						TSM:Print(string.format(L["Please open %s to craft this item."], data.profession))
 					elseif not currentProfession then
-						-- No profession window is open
-						if data.profession == "Mining" then
-							CastSpellByName("Smelting")
-						else
-							CastSpellByName(data.profession)
-						end
-						TSM:Print(L["Opening profession window..."])
+						TSM:Print(string.format(L["Please open %s to craft this item."], data.profession))
 					end
 				else
 					TSM:Print(L["Please open the profession window first."])
