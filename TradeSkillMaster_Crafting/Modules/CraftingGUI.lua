@@ -3014,15 +3014,18 @@ function GUI:CreateTaskListWindow()
 						else
 							CastSpellByName(data.profession)
 						end
+						TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterOpen", 0.3, GUI.UpdateTaskList)
 					elseif not currentProfession then
 						if data.profession == "Mining" then
 							CastSpellByName("Smelting")
 						else
 							CastSpellByName(data.profession)
 						end
+						TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterOpen", 0.3, GUI.UpdateTaskList)
 					end
 				else
 					GUI:OpenFirstProfession()
+					TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterOpen", 0.3, GUI.UpdateTaskList)
 				end
 			end
 		end
