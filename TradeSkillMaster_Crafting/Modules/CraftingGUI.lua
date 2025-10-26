@@ -168,17 +168,26 @@ end
 
 function GUI:OpenFirstProfession()
 	TSM.db.global.showingDefaultFrame = nil
-	local link
+	local player = UnitName("player")
+	local professionName
+
 	for playerName, professions in pairs(TSM.db.realm.tradeSkills) do
-		for _, data in pairs(professions) do
-			link = data.link
-			if link then break end
+		if playerName == player then
+			for profession, data in pairs(professions) do
+				professionName = profession
+				break
+			end
+			if professionName then break end
 		end
-		if link then break end
 	end
-	if not link then return end
-	local tradeString = strsub(select(3, ("|"):split(link)), 2)
-	SetItemRef(tradeString, link, "LeftButton", ChatFrame1)
+
+	if not professionName then return end
+
+	if professionName == "Mining" then
+		CastSpellByName("Smelting")
+	else
+		CastSpellByName(professionName)
+	end
 end
 
 function GUI:EventHandler(event, ...)
