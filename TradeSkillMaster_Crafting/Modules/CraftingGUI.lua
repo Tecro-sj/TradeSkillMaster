@@ -3279,6 +3279,7 @@ function GUI:UpdateTaskList()
 							numQueued = numQueued,
 							profit = select(3, TSM.Cost:GetCraftPrices(spellID)),
 							velName = TSM.db.realm.crafts[spellID].velName,
+							profession = TSM.db.realm.crafts[spellID].profession,
 						}
 						tinsert(craftRows, row)
 					end
