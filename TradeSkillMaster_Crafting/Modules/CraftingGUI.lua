@@ -422,6 +422,8 @@ function GUI:CastTradeSkill(index, quantity, vellum)
 	if vellum then
 		UseItemByName(vellum)
 	end
+	-- Update task list after crafting
+	TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterCraft", 0.5, GUI.UpdateTaskList)
 end
 
 
