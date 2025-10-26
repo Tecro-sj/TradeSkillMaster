@@ -202,6 +202,7 @@ function GUI:EventHandler(event, ...)
 			TradeSkillFrame_Update()
 			TSMAPI:CreateTimeDelay("craftingProfessionUpdateThrottle", 0.2, GUI.UpdateProfessionsTabST)
 			TSMAPI:CreateTimeDelay("craftingQueueUpdateThrottle", 0.2, GUI.UpdateQueue)
+			TSMAPI:CreateTimeDelay("craftingTaskListUpdateThrottle", 0.2, GUI.UpdateTaskList)
 			if not private.shown[GetTradeSkillLine()] then
 				TSMAPI:CreateTimeDelay("firstTimeCraftingProfessionUpdateThrottle", 0.5, GUI.UpdateProfessionsTabST)
 				private.shown[GetTradeSkillLine()] = true
