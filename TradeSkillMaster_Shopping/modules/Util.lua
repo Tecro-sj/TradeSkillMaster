@@ -414,9 +414,17 @@ function private:ProcessItem(itemString, auctionItem)
 	end
 	
 	-- check for /exact filter
-	if query.exactOnly and strlower(name) ~= strlower(query.name) then
-		private.auctions[itemString] = nil
-		return
+	-- Allow items that match exactly OR start with the search term followed by " of " (for random enchants)
+	if query.exactOnly then
+		local lowerName = strlower(name)
+		local lowerQuery = strlower(query.name)
+		local isExactMatch = lowerName == lowerQuery
+		local hasRandomEnchant = lowerName:sub(1, #lowerQuery) == lowerQuery and lowerName:sub(#lowerQuery + 1, #lowerQuery + 4) == " of "
+
+		if not isExactMatch and not hasRandomEnchant then
+			private.auctions[itemString] = nil
+			return
+		end
 	end
 	
 	-- remove any records that don't have buyouts
