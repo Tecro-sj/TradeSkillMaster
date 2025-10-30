@@ -303,7 +303,7 @@ function private:ScanAuctions()
 
 	if private.scanType == "lastPage" then
 		return DoCallback("SCAN_LAST_PAGE_COMPLETE", private.data)
-	elseif private.query.page >= totalPages then
+	elseif totalPages > 0 and private.query.page >= totalPages then
 		-- we have finished scanning this query
 		private:StopScanning()
 		return DoCallback("SCAN_COMPLETE", private.data)
