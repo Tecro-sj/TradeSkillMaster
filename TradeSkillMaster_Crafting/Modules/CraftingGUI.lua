@@ -223,6 +223,10 @@ function GUI:EventHandler(event, ...)
 			if skillName and skillName ~= "UNKNOWN" and TSM.db.realm.tradeSkills[UnitName("player")] and TSM.db.realm.tradeSkills[UnitName("player")][skillName] then
 				TSM.db.realm.tradeSkills[UnitName("player")][skillName].level = level
 				TSM.db.realm.tradeSkills[UnitName("player")][skillName].maxLevel = maxLevel
+				-- Update the profession dropdown to show the new skill level
+				if GUI.frame and GUI.frame.content.professionsTab then
+					GUI.frame.content.professionsTab:UpdateProfession()
+				end
 			end
 		elseif event == "UNIT_SPELLCAST_START" then
 			local unit = ...
@@ -924,7 +928,8 @@ function GUI:CreateProfessionsTab(parent)
 		local list = {}
 		for playerName, professionData in pairs(TSM.db.realm.tradeSkills) do
 			for name, data in pairs(professionData) do
-				if not data.isSecondary and playerName == player then -- only display current player profs until blizz fix it
+				-- Show all characters' professions (not just current player)
+				if not data.isSecondary then
 					list[playerName .. "~" .. name] = format("%s %d/%d - %s", name, data.level or "?", data.maxLevel or "?", playerName)
 				end
 			end
