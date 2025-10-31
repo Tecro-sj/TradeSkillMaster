@@ -715,7 +715,8 @@ function GUI:CreateQueueFrame(parent)
 					-- Find item in merchant inventory
 					local numItems = GetMerchantNumItems()
 					for i = 1, numItems do
-						local merchantItemID = GetMerchantItemID(i)
+						local merchantItemLink = GetMerchantItemLink(i)
+						local merchantItemID = merchantItemLink and tonumber(string.match(merchantItemLink, "item:(%d+)"))
 						if merchantItemID == itemID then
 							-- Calculate how many we need
 							local have = TSM.Inventory:GetTotalQuantity(data.itemString)
@@ -3144,7 +3145,8 @@ function GUI:CreateTaskListWindow()
 					-- Find item in merchant inventory
 					local numItems = GetMerchantNumItems()
 					for i = 1, numItems do
-						local merchantItemID = GetMerchantItemID(i)
+						local merchantItemLink = GetMerchantItemLink(i)
+						local merchantItemID = merchantItemLink and tonumber(string.match(merchantItemLink, "item:(%d+)"))
 						if merchantItemID == itemID then
 							-- Calculate how many we need
 							local have = TSM.Inventory:GetTotalQuantity(data.itemString)
