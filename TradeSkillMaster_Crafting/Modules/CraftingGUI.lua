@@ -244,7 +244,7 @@ function GUI:EventHandler(event, ...)
 			-- end
 
 			-- decrements the number of this craft that are queued to be crafted
-			craft.queued = craft.queued - 1
+			craft.queued = max((craft.queued or 0) - 1, 0)
 			if GUI.isCrafting and GUI.isCrafting.quantity > 0 then
 				GUI.isCrafting.quantity = GUI.isCrafting.quantity - 1
 				if GUI.isCrafting.quantity == 0 then
@@ -1370,6 +1370,11 @@ function GUI:CreateCraftInfoFrame(parent)
 		local spellID = TSM.Util:GetSpellID(frame.index)
 		if not spellID or not TSM.db.realm.crafts[spellID] then return end
 
+		-- Initialize queued if it doesn't exist
+		if not TSM.db.realm.crafts[spellID].queued then
+			TSM.db.realm.crafts[spellID].queued = 0
+		end
+
 		TSM.db.realm.crafts[spellID].queued = max(TSM.db.realm.crafts[spellID].queued, 0)
 		if button == "LeftButton" then
 			if IsModifiedClick() then
@@ -1748,15 +1753,35 @@ local function GetRawMaterials(itemString, quantity, depth, visited)
 	TSM:UpdateCraftReverseLookup()
 	local spellID = TSM.craftReverseLookup[itemString] and TSM.craftReverseLookup[itemString][1]
 
+	-- Check if we have this item in inventory
+	local haveQuantity = TSM.Inventory:GetTotalQuantity(itemString)
+
+	-- If we have enough of this item, don't break it down into sub-materials
+	if haveQuantity >= quantity then
+		rawMats[itemString] = quantity
+		return rawMats
+	end
+
+	-- If we have some, we still need the rest
+	local stillNeed = quantity - haveQuantity
+
+	-- If item can be crafted, break down what we still need into sub-materials
 	if spellID and TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].mats then
+		-- Add what we already have
+		if haveQuantity > 0 then
+			rawMats[itemString] = haveQuantity
+		end
+
+		-- Break down only what we still need to craft
 		for matItemString, matQuantity in pairs(TSM.db.realm.crafts[spellID].mats) do
-			local totalMatQuantity = matQuantity * quantity
+			local totalMatQuantity = matQuantity * stillNeed
 			local subRawMats = GetRawMaterials(matItemString, totalMatQuantity, depth + 1, CopyTable(visited))
 			for rawMatString, rawMatQuantity in pairs(subRawMats) do
 				rawMats[rawMatString] = (rawMats[rawMatString] or 0) + rawMatQuantity
 			end
 		end
 	else
+		-- This is a raw material or can't be crafted
 		rawMats[itemString] = (rawMats[itemString] or 0) + quantity
 	end
 
