@@ -3222,10 +3222,10 @@ function GUI:CreateTaskListWindow()
 	frame.matST:SetData({})
 	frame.matST:DisableSelection(true)
 
-	-- Profit/Cost labels
+	-- Profit/Cost labels (adjusted for two rows of buttons)
 	local profitLabel = TSMAPI.GUI:CreateLabel(frame.content, "medium")
-	profitLabel:SetPoint("BOTTOMLEFT", 5, 45)
-	profitLabel:SetPoint("BOTTOMRIGHT", -35, 45)
+	profitLabel:SetPoint("BOTTOMLEFT", 5, 55)
+	profitLabel:SetPoint("BOTTOMRIGHT", -35, 55)
 	profitLabel:SetJustifyH("LEFT")
 	profitLabel:SetJustifyV("BOTTOM")
 	profitLabel.SetAmounts = function(self, cost, profit)
@@ -3248,25 +3248,119 @@ function GUI:CreateTaskListWindow()
 	profitLabel:SetAmounts("---", "---")
 	frame.profitLabel = profitLabel
 
-	-- Clear Queue button
-	local btn = TSMAPI.GUI:CreateButton(frame.content, 14)
-	btn:SetPoint("BOTTOMLEFT", 5, 5)
-	btn:SetWidth(120)
-	btn:SetHeight(20)
-	btn:SetText(L["Clear Queue"])
-	btn:SetScript("OnClick", function()
+	-- Clear Queue button (top-left)
+	local clearQueueBtn = TSMAPI.GUI:CreateButton(frame.content, 14)
+	clearQueueBtn:SetPoint("BOTTOMLEFT", 5, 30)
+	clearQueueBtn:SetWidth(120)
+	clearQueueBtn:SetHeight(20)
+	clearQueueBtn:SetText(L["Clear Queue"])
+	clearQueueBtn:SetScript("OnClick", function()
 		TSM.Queue:ClearQueue()
 		GUI:UpdateTaskList()
 	end)
 
-	-- Refresh button (narrower to leave space for resize grip)
-	local btn2 = TSMAPI.GUI:CreateButton(frame.content, 14)
-	btn2:SetPoint("BOTTOMLEFT", btn, "BOTTOMRIGHT", 5, 0)
-	btn2:SetPoint("BOTTOMRIGHT", -30, 5)
-	btn2:SetHeight(20)
-	btn2:SetText(L["Refresh"])
-	btn2:SetScript("OnClick", function()
+	-- Refresh button (top-right, narrower to leave space for resize grip)
+	local refreshBtn = TSMAPI.GUI:CreateButton(frame.content, 14)
+	refreshBtn:SetPoint("BOTTOMLEFT", clearQueueBtn, "BOTTOMRIGHT", 5, 0)
+	refreshBtn:SetPoint("BOTTOMRIGHT", -30, 30)
+	refreshBtn:SetHeight(20)
+	refreshBtn:SetText(L["Refresh"])
+	refreshBtn:SetScript("OnClick", function()
 		GUI:UpdateTaskList()
+	end)
+
+	-- Vendor Buy button (bottom-left)
+	local vendorBuyBtn = TSMAPI.GUI:CreateButton(frame.content, 14)
+	vendorBuyBtn:SetPoint("BOTTOMLEFT", 5, 5)
+	vendorBuyBtn:SetWidth(120)
+	vendorBuyBtn:SetHeight(20)
+	vendorBuyBtn:SetText("Vendor Buy")
+	vendorBuyBtn:SetScript("OnClick", function()
+		if not (MerchantFrame and MerchantFrame:IsVisible()) then
+			TSM:Print("Please open a vendor first.")
+			return
+		end
+
+		-- Get aggregated materials from queue
+		local queuedCrafts = TSM.Queue:GetQueue()
+		local aggregatedMats = AggregateRawMaterialsFromQueue(queuedCrafts)
+
+		-- Buy vendor items
+		local numItems = GetMerchantNumItems()
+		local purchasedAny = false
+		for itemString, quantity in pairs(aggregatedMats) do
+			local isVendorItem = TSMAPI:GetVendorCost(itemString) ~= nil
+			if isVendorItem then
+				local have = TSM.Inventory:GetTotalQuantity(itemString)
+				local need = max(quantity - have, 0)
+				if need > 0 then
+					local itemID = TSMAPI:GetItemID(itemString)
+					if itemID then
+						for i = 1, numItems do
+							local merchantItemLink = GetMerchantItemLink(i)
+							local merchantItemID = merchantItemLink and tonumber(string.match(merchantItemLink, "item:(%d+)"))
+							if merchantItemID == itemID then
+								local _, _, _, stackSize = GetMerchantItemInfo(i)
+								local stacksToBuy = ceil(need / stackSize)
+								for j = 1, stacksToBuy do
+									BuyMerchantItem(i, 1)
+								end
+								purchasedAny = true
+								break
+							end
+						end
+					end
+				end
+			end
+		end
+
+		if purchasedAny then
+			TSM:Print("Purchased vendor items.")
+			TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterVendorBuy", 0.3, GUI.UpdateTaskList)
+		else
+			TSM:Print("No vendor items needed or available.")
+		end
+	end)
+
+	-- Search Auction button (bottom-right)
+	local searchAuctionBtn = TSMAPI.GUI:CreateButton(frame.content, 14)
+	searchAuctionBtn:SetPoint("BOTTOMLEFT", vendorBuyBtn, "BOTTOMRIGHT", 5, 0)
+	searchAuctionBtn:SetPoint("BOTTOMRIGHT", -30, 5)
+	searchAuctionBtn:SetHeight(20)
+	searchAuctionBtn:SetText("Search Auction")
+	searchAuctionBtn:SetScript("OnClick", function()
+		if not TSMAPI:AHTabIsVisible("Shopping") then
+			TSM:Print("Please switch to the Shopping Tab to search for materials.")
+			return
+		end
+
+		-- Get aggregated materials from queue
+		local queuedCrafts = TSM.Queue:GetQueue()
+		local aggregatedMats = AggregateRawMaterialsFromQueue(queuedCrafts)
+
+		-- Search for non-vendor items
+		local searchList = {}
+		for itemString, quantity in pairs(aggregatedMats) do
+			local isVendorItem = TSMAPI:GetVendorCost(itemString) ~= nil
+			if not isVendorItem then
+				local have = TSM.Inventory:GetTotalQuantity(itemString)
+				local need = max(quantity - have, 0)
+				if need > 0 then
+					local itemName = TSMAPI:GetSafeItemInfo(itemString)
+					if itemName then
+						tinsert(searchList, itemName .. "/x" .. need)
+					end
+				end
+			end
+		end
+
+		if #searchList > 0 then
+			local searchString = table.concat(searchList, ";")
+			TSMAPI:ModuleAPI("Shopping", "startScan", searchString)
+			TSM:Print("Searching for " .. #searchList .. " materials in Shopping tab.")
+		else
+			TSM:Print("No materials needed from auction house.")
+		end
 	end)
 
 	-- Resize handle (bottom-right corner grip)
