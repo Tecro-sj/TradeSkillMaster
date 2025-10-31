@@ -3401,6 +3401,22 @@ function GUI:CreateTaskListWindow()
 	-- Initial button state
 	UpdateSearchAuctionButton()
 
+	-- Update button states when frame is shown or becomes visible
+	frame:SetScript("OnShow", function()
+		UpdateVendorBuyButton()
+		UpdateSearchAuctionButton()
+	end)
+
+	-- Also update periodically when frame is visible (to catch state changes)
+	frame:SetScript("OnUpdate", function(self, elapsed)
+		self.timeSinceLastUpdate = (self.timeSinceLastUpdate or 0) + elapsed
+		if self.timeSinceLastUpdate >= 0.5 then
+			UpdateVendorBuyButton()
+			UpdateSearchAuctionButton()
+			self.timeSinceLastUpdate = 0
+		end
+	end)
+
 	-- Resize handle (bottom-right corner grip)
 	local sizer = CreateFrame("Frame", nil, frame)
 	sizer:SetPoint("BOTTOMRIGHT", -2, 2)
