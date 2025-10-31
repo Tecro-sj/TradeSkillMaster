@@ -2823,12 +2823,20 @@ function GUI:GatheringEventHandler(event)
 		private.currentTask = L["Visit Vendor"]
 		-- Refresh task list when vendor opens
 		TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterMerchantShow", 0.1, GUI.UpdateTaskList)
+		-- Update Vendor Buy button state
+		if GUI.taskListFrame and GUI.taskListFrame.UpdateVendorBuyButton then
+			GUI.taskListFrame.UpdateVendorBuyButton()
+		end
 	elseif event == "MERCHANT_CLOSED" then
 		private.currentSource = nil
 		private.currentTask = nil
 		GUI.gatheringFrame.gatherButton:Disable()
 		-- Refresh task list when vendor closes
 		TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterMerchantClose", 0.1, GUI.UpdateTaskList)
+		-- Update Vendor Buy button state
+		if GUI.taskListFrame and GUI.taskListFrame.UpdateVendorBuyButton then
+			GUI.taskListFrame.UpdateVendorBuyButton()
+		end
 	elseif event == "MAIL_SHOW" then
 		private.currentSource = UnitName("player")
 		private.currentTask = L["Mail Items"]
@@ -2841,12 +2849,20 @@ function GUI:GatheringEventHandler(event)
 		TSM.Inventory.gatherItem = nil
 		private.currentSource = L["Auction House"]
 		private.currentTask = L["Search for Mats"]
+		-- Update Search Auction button state
+		if GUI.taskListFrame and GUI.taskListFrame.UpdateSearchAuctionButton then
+			GUI.taskListFrame.UpdateSearchAuctionButton()
+		end
 	elseif event == "AUCTION_HOUSE_CLOSED" then
 		TSM.Inventory.gatherQuantity = nil
 		TSM.Inventory.gatherItem = nil
 		private.currentSource = nil
 		private.currentTask = nil
 		GUI.gatheringFrame.gatherButton:Disable()
+		-- Update Search Auction button state
+		if GUI.taskListFrame and GUI.taskListFrame.UpdateSearchAuctionButton then
+			GUI.taskListFrame.UpdateSearchAuctionButton()
+		end
 	end
 	TSMAPI:CreateTimeDelay("gatheringUpdateThrottle", 0.3, GUI.UpdateGathering)
 end
@@ -3275,12 +3291,20 @@ function GUI:CreateTaskListWindow()
 	vendorBuyBtn:SetWidth(120)
 	vendorBuyBtn:SetHeight(20)
 	vendorBuyBtn:SetText("Vendor Buy")
-	vendorBuyBtn:SetScript("OnClick", function()
-		if not (MerchantFrame and MerchantFrame:IsVisible()) then
-			TSM:Print("Please open a vendor first.")
-			return
-		end
 
+	-- Function to update button state
+	local function UpdateVendorBuyButton()
+		if MerchantFrame and MerchantFrame:IsVisible() then
+			vendorBuyBtn:Enable()
+		else
+			vendorBuyBtn:Disable()
+		end
+	end
+
+	-- Store reference for event handler
+	frame.UpdateVendorBuyButton = UpdateVendorBuyButton
+
+	vendorBuyBtn:SetScript("OnClick", function()
 		-- Get aggregated materials from queue
 		local queuedCrafts = TSM.Queue:GetQueue()
 		local aggregatedMats = AggregateRawMaterialsFromQueue(queuedCrafts)
@@ -3322,18 +3346,29 @@ function GUI:CreateTaskListWindow()
 		end
 	end)
 
+	-- Initial button state
+	UpdateVendorBuyButton()
+
 	-- Search Auction button (bottom-right)
 	local searchAuctionBtn = TSMAPI.GUI:CreateButton(frame.content, 14)
 	searchAuctionBtn:SetPoint("BOTTOMLEFT", vendorBuyBtn, "BOTTOMRIGHT", 5, 0)
 	searchAuctionBtn:SetPoint("BOTTOMRIGHT", -30, 5)
 	searchAuctionBtn:SetHeight(20)
 	searchAuctionBtn:SetText("Search Auction")
-	searchAuctionBtn:SetScript("OnClick", function()
-		if not TSMAPI:AHTabIsVisible("Shopping") then
-			TSM:Print("Please switch to the Shopping Tab to search for materials.")
-			return
-		end
 
+	-- Function to update button state
+	local function UpdateSearchAuctionButton()
+		if TSMAPI:AHTabIsVisible("Shopping") then
+			searchAuctionBtn:Enable()
+		else
+			searchAuctionBtn:Disable()
+		end
+	end
+
+	-- Store reference for event handler
+	frame.UpdateSearchAuctionButton = UpdateSearchAuctionButton
+
+	searchAuctionBtn:SetScript("OnClick", function()
 		-- Get aggregated materials from queue
 		local queuedCrafts = TSM.Queue:GetQueue()
 		local aggregatedMats = AggregateRawMaterialsFromQueue(queuedCrafts)
@@ -3362,6 +3397,9 @@ function GUI:CreateTaskListWindow()
 			TSM:Print("No materials needed from auction house.")
 		end
 	end)
+
+	-- Initial button state
+	UpdateSearchAuctionButton()
 
 	-- Resize handle (bottom-right corner grip)
 	local sizer = CreateFrame("Frame", nil, frame)
