@@ -703,6 +703,34 @@ function GUI:CreateQueueFrame(parent)
 		if IsModifiedClick() then
 			local link = select(2, TSMAPI:GetSafeItemInfo(data.itemString))
 			HandleModifiedItemClick(link or data.itemString)
+		else
+			-- Try to buy from vendor if merchant frame is open
+			if MerchantFrame and MerchantFrame:IsVisible() then
+				local itemID = TSMAPI:GetItemID(data.itemString)
+				if itemID then
+					-- Find item in merchant inventory
+					local numItems = GetMerchantNumItems()
+					for i = 1, numItems do
+						local merchantItemID = GetMerchantItemID(i)
+						if merchantItemID == itemID then
+							-- Calculate how many we need
+							local have = TSM.Inventory:GetTotalQuantity(data.itemString)
+							local need = data.cols[2].args[1] -- This is the "Need" value
+							if need > 0 then
+								-- Get stack size and buy enough stacks
+								local _, _, _, quantity = GetMerchantItemInfo(i)
+								local stacksToBuy = ceil(need / quantity)
+								for j = 1, stacksToBuy do
+									BuyMerchantItem(i, 1)
+								end
+								-- Refresh task list after purchase
+								TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterVendorBuy", 0.3, GUI.UpdateTaskList)
+								return
+							end
+						end
+					end
+				end
+			end
 		end
 	end
 
@@ -2745,10 +2773,14 @@ function GUI:GatheringEventHandler(event)
 	elseif event == "MERCHANT_SHOW" then
 		private.currentSource = L["Vendor"]
 		private.currentTask = L["Visit Vendor"]
+		-- Refresh task list when vendor opens
+		TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterMerchantShow", 0.1, GUI.UpdateTaskList)
 	elseif event == "MERCHANT_CLOSED" then
 		private.currentSource = nil
 		private.currentTask = nil
 		GUI.gatheringFrame.gatherButton:Disable()
+		-- Refresh task list when vendor closes
+		TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterMerchantClose", 0.1, GUI.UpdateTaskList)
 	elseif event == "MAIL_SHOW" then
 		private.currentSource = UnitName("player")
 		private.currentTask = L["Mail Items"]
@@ -3099,6 +3131,34 @@ function GUI:CreateTaskListWindow()
 		if IsModifiedClick() then
 			local link = select(2, TSMAPI:GetSafeItemInfo(data.itemString))
 			HandleModifiedItemClick(link or data.itemString)
+		else
+			-- Try to buy from vendor if merchant frame is open
+			if MerchantFrame and MerchantFrame:IsVisible() then
+				local itemID = TSMAPI:GetItemID(data.itemString)
+				if itemID then
+					-- Find item in merchant inventory
+					local numItems = GetMerchantNumItems()
+					for i = 1, numItems do
+						local merchantItemID = GetMerchantItemID(i)
+						if merchantItemID == itemID then
+							-- Calculate how many we need
+							local have = TSM.Inventory:GetTotalQuantity(data.itemString)
+							local need = data.cols[2].args[1] -- This is the "Need" value
+							if need > 0 then
+								-- Get stack size and buy enough stacks
+								local _, _, _, quantity = GetMerchantItemInfo(i)
+								local stacksToBuy = ceil(need / quantity)
+								for j = 1, stacksToBuy do
+									BuyMerchantItem(i, 1)
+								end
+								-- Refresh task list after purchase
+								TSMAPI:CreateTimeDelay("craftingTaskListUpdateAfterVendorBuy", 0.3, GUI.UpdateTaskList)
+								return
+							end
+						end
+					end
+				end
+			end
 		end
 	end
 
