@@ -3391,8 +3391,14 @@ function GUI:CreateTaskListWindow()
 
 		if #searchList > 0 then
 			local searchString = table.concat(searchList, ";")
-			TSMAPI:ModuleAPI("Shopping", "startScan", searchString)
-			TSM:Print("Searching for " .. #searchList .. " materials in Shopping tab.")
+			-- Use the Shopping module's public API function directly
+			local ShoppingModule = TSMAPI:GetTSMModule("TradeSkillMaster_Shopping")
+			if ShoppingModule and ShoppingModule.StartFilterSearch then
+				ShoppingModule:StartFilterSearch(searchString)
+				TSM:Print("Searching for " .. #searchList .. " materials in Shopping tab.")
+			else
+				TSM:Print("Could not start search. Shopping module not found.")
+			end
 		else
 			TSM:Print("No materials needed from auction house.")
 		end
