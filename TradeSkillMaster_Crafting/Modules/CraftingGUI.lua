@@ -933,6 +933,11 @@ function GUI:CreateProfessionsTab(parent)
 	local currentSelection
 	local player = UnitName("player")
 	local function UpdateProfession(self)
+		-- Don't update the dropdown while it's open to prevent list from disappearing
+		if self.dropdown.open then
+			return
+		end
+
 		local list = {}
 		for playerName, professionData in pairs(TSM.db.realm.tradeSkills) do
 			for name, data in pairs(professionData) do
