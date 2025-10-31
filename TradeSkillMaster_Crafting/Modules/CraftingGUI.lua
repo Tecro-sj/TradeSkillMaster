@@ -634,7 +634,14 @@ function GUI:CreateQueueFrame(parent)
 			local inventory = TSM.Inventory:GetPlayerBagNum(itemIDx)
 			local need = matQuantity * data.numQueued
 			local color
-			if inventory >= need then color = "|cff00ff00" else color = "|cffff0000" end
+			local isVendorItem = TSMAPI:GetVendorCost(itemIDx) ~= nil
+			if inventory >= need then
+				color = "|cff00ff00"
+			elseif isVendorItem then
+				color = "|cff00bfff"
+			else
+				color = "|cffff0000"
+			end
 			name = color .. inventory .. "/" .. need .. "|r " .. name
 			GameTooltip:AddLine(name, 1, 1, 1)
 		end
@@ -2013,12 +2020,17 @@ function GUI:UpdateQueue()
 		local need = max(quantity - have, 0)
 
 		local color
+		local isVendorItem = TSMAPI:GetVendorCost(itemString) ~= nil
+
 		if need == 0 then
 			if TSM.Inventory:GetPlayerBagNum(itemString) >= quantity then
 				color = "|cff00ff00"
 			else
 				color = "|cffffff00"
 			end
+		elseif isVendorItem then
+			-- Vendor items are shown in blue
+			color = "|cff00bfff"
 		else
 			color = "|cffff0000"
 		end
@@ -3027,7 +3039,14 @@ function GUI:CreateTaskListWindow()
 			local inventory = TSM.Inventory:GetPlayerBagNum(itemID)
 			local need = matQuantity * data.numQueued
 			local color
-			if inventory >= need then color = "|cff00ff00" else color = "|cffff0000" end
+			local isVendorItem = TSMAPI:GetVendorCost(itemID) ~= nil
+			if inventory >= need then
+				color = "|cff00ff00"
+			elseif isVendorItem then
+				color = "|cff00bfff"
+			else
+				color = "|cffff0000"
+			end
 			name = color .. inventory .. "/" .. need .. "|r " .. name
 			GameTooltip:AddLine(name, 1, 1, 1)
 		end
@@ -3449,12 +3468,17 @@ function GUI:UpdateTaskList()
 		local need = max(quantity - have, 0)
 
 		local color
+		local isVendorItem = TSMAPI:GetVendorCost(itemString) ~= nil
+
 		if need == 0 then
 			if TSM.Inventory:GetPlayerBagNum(itemString) >= quantity then
 				color = "|cff00ff00"
 			else
 				color = "|cffffff00"
 			end
+		elseif isVendorItem then
+			-- Vendor items are shown in blue
+			color = "|cff00bfff"
 		else
 			color = "|cffff0000"
 		end
