@@ -3358,7 +3358,8 @@ function GUI:CreateTaskListWindow()
 
 	-- Function to update button state
 	local function UpdateSearchAuctionButton()
-		if TSMAPI:AHTabIsVisible("Shopping") then
+		-- Check if AH frame exists and is shown, AND if Shopping tab is visible
+		if AuctionFrame and AuctionFrame:IsShown() and TSMAPI:AHTabIsVisible("Shopping") then
 			searchAuctionBtn:Enable()
 		else
 			searchAuctionBtn:Disable()
@@ -3449,35 +3450,23 @@ function GUI:CreateTaskListWindow()
 	collapseBtn:SetScript("OnClick", function()
 		if frame.isCollapsed then
 			-- Expand
-			frame:ClearAllPoints()
-			if frame.savedPoint then
-				frame:SetPoint(unpack(frame.savedPoint))
-			else
-				frame:SetPoint("CENTER")
-			end
 			frame:SetHeight(expandedHeight)
 			frame.content:Show()
 			sizer:Show()
 			frame.isCollapsed = false
 			collapseBtn:SetText("-")
+			-- Save the new height
+			frame:SavePositionAndSize()
 		else
 			-- Collapse
 			expandedHeight = frame:GetHeight()
-			-- Save current position (remember TOP position)
-			local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint()
-			frame.savedPoint = {point, relativeTo, relativePoint, xOfs, yOfs}
-
-			-- Get the current TOP position
-			local top = frame:GetTop()
-
-			-- Clear and re-anchor to TOP so it collapses upward
-			frame:ClearAllPoints()
-			frame:SetPoint("TOP", UIParent, "BOTTOMLEFT", frame:GetLeft() + frame:GetWidth()/2, top)
 			frame:SetHeight(collapsedHeight)
 			frame.content:Hide()
 			sizer:Hide()
 			frame.isCollapsed = true
 			collapseBtn:SetText("+")
+			-- Save the new height
+			frame:SavePositionAndSize()
 		end
 	end)
 
