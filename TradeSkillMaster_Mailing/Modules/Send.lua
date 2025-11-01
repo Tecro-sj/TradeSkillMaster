@@ -369,7 +369,7 @@ function private:AddItemFromBag(bag, slot)
 	end
 
 	if not emptySlot then
-		TSMAPI:Print(L["No empty item slots available."])
+		TSM:Print(L["No empty item slots available."])
 		return
 	end
 
@@ -446,7 +446,7 @@ end
 
 function private:SendMail(frame)
 	if private.target == "" then
-		TSMAPI:Print(L["Please enter a recipient name."])
+		TSM:Print(L["Please enter a recipient name."])
 		return
 	end
 
@@ -458,7 +458,7 @@ function private:SendMail(frame)
 	end
 
 	if totalItems == 0 and private.money == 0 then
-		TSMAPI:Print(L["Please add items or gold to send."])
+		TSM:Print(L["Please add items or gold to send."])
 		return
 	end
 
@@ -492,7 +492,7 @@ function private:SendSingleMail()
 	end
 
 	private:AddToRecentlyMailed(private.target)
-	TSMAPI:Print(format(L["Sending mail to %s..."], private.target))
+	TSM:Printf(L["Sending mail to %s..."], private.target)
 end
 
 function private:SendMultipleMails()
@@ -532,11 +532,11 @@ function private:SendMultipleMails()
 	end
 
 	private:AddToRecentlyMailed(private.target)
-	TSMAPI:Print(format(L["Sending %d mails to %s..."], mailCount, private.target))
+	TSM:Printf(L["Sending %d mails to %s..."], mailCount, private.target)
 end
 
 function private:OnMailSent()
-	TSMAPI:Print(L["Mail sent successfully!"])
+	TSM:Print(L["Mail sent successfully!"])
 end
 
 function private:ToggleContactsMenu(button, parentFrame)
@@ -599,7 +599,7 @@ function private:ShowFriendsList(parentFrame)
 	ShowFriends()
 	local numFriends = GetNumFriends()
 	if numFriends == 0 then
-		TSMAPI:Print(L["You have no friends online."])
+		TSM:Print(L["You have no friends online."])
 		return
 	end
 
@@ -612,7 +612,7 @@ function private:ShowFriendsList(parentFrame)
 	end
 
 	if #friendsList == 0 then
-		TSMAPI:Print(L["You have no friends online."])
+		TSM:Print(L["You have no friends online."])
 		return
 	end
 
@@ -666,14 +666,14 @@ end
 
 function private:ShowGuildList(parentFrame)
 	if not IsInGuild() then
-		TSMAPI:Print(L["You are not in a guild."])
+		TSM:Print(L["You are not in a guild."])
 		return
 	end
 
 	GuildRoster()
 	local numMembers = GetNumGuildMembers()
 	if numMembers == 0 then
-		TSMAPI:Print(L["No guild members found."])
+		TSM:Print(L["No guild members found."])
 		return
 	end
 
@@ -687,7 +687,7 @@ function private:ShowGuildList(parentFrame)
 	end
 
 	if #guildList == 0 then
-		TSMAPI:Print(L["No guild members online."])
+		TSM:Print(L["No guild members online."])
 		return
 	end
 
@@ -770,7 +770,7 @@ function private:ShowAddContactDialog(parentFrame)
 			local name = self.editBox:GetText():trim()
 			if name ~= "" then
 				private:AddContact(name)
-				TSMAPI:Print(format(L["Added %s to contacts."], name))
+				TSM:Printf(L["Added %s to contacts."], name)
 			end
 		end,
 		timeout = 0,
@@ -798,13 +798,13 @@ end
 
 function private:ShowRemoveContactDialog(parentFrame)
 	if not TSM.db.global.contacts or #TSM.db.global.contacts == 0 then
-		TSMAPI:Print(L["No contacts to remove."])
+		TSM:Print(L["No contacts to remove."])
 		return
 	end
 
 	private:ShowContactSelectionList(parentFrame, "Remove Contact", function(name)
 		private:RemoveContact(name)
-		TSMAPI:Print(format(L["Removed %s from contacts."], name))
+		TSM:Printf(L["Removed %s from contacts."], name)
 	end)
 end
 
@@ -821,7 +821,7 @@ end
 
 function private:ShowRecentlyMailedList(parentFrame)
 	if not TSM.db.global.recentlyMailed or #TSM.db.global.recentlyMailed == 0 then
-		TSMAPI:Print(L["No recently mailed contacts."])
+		TSM:Print(L["No recently mailed contacts."])
 		return
 	end
 
@@ -841,7 +841,7 @@ function private:ShowAltsList(parentFrame)
 	end
 
 	if #TSM.db.realm.alts == 0 then
-		TSMAPI:Print(L["No alts configured. Add your alt names to the list."])
+		TSM:Print(L["No alts configured. Add your alt names to the list."])
 		private:ShowAddAltDialog(parentFrame)
 		return
 	end
@@ -865,7 +865,7 @@ function private:ShowAddAltDialog(parentFrame)
 			local name = self.editBox:GetText():trim()
 			if name ~= "" then
 				private:AddAlt(name)
-				TSMAPI:Print(format(L["Added %s to alts list."], name))
+				TSM:Printf(L["Added %s to alts list."], name)
 			end
 		end,
 		timeout = 0,
