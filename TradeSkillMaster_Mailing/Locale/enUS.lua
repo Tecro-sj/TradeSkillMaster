@@ -174,3 +174,15 @@ L["Added %s to alts list."] = true
 L["No guild members found."] = true
 L["No guild members online."] = true
 L["No empty item slots available."] = true
+L["Target:"] = true
+L["Item:"] = true
+L["Drag an item here"] = true
+L["Max Quantity (0 = all):"] = true
+L["COD per Item:"] = true
+L["Right-click the item icon to clear it."] = true
+L["Send Mail"] = true
+L["Please enter a recipient name."] = true
+L["Please select an item to send."] = true
+L["You don't have any of this item."] = true
+L["Sending %d %s to %s..."] = true
+L["Mail sent successfully!"] = true
