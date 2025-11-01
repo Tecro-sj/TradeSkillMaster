@@ -326,9 +326,31 @@ function private:CreateItemSlot(parent, index)
 end
 
 function private:OnItemDrag(slot)
-	local cType, itemID, link, quantity = GetCursorInfo()
+	local cType, itemID, link = GetCursorInfo()
 	if cType == "item" then
-		if not quantity then quantity = 1 end
+		local _, stackCount = GetCursorInfo()
+		local quantity = 1
+
+		if type(stackCount) == "number" then
+			quantity = stackCount
+		else
+			local _, _, _, _, _, _, _, maxStack = GetItemInfo(link)
+			if maxStack and maxStack > 1 then
+				for bag = 0, NUM_BAG_SLOTS do
+					for bagSlot = 1, GetContainerNumSlots(bag) do
+						local itemLink = GetContainerItemLink(bag, bagSlot)
+						if itemLink == link then
+							local _, count = GetContainerItemInfo(bag, bagSlot)
+							if count then
+								quantity = count
+								break
+							end
+						end
+					end
+					if quantity > 1 then break end
+				end
+			end
+		end
 
 		slot.itemLink = link
 		slot.quantity = quantity
@@ -963,33 +985,14 @@ function private:ShowContactSelectionList(parentFrame, title, onSelect, isAlts)
 end
 
 function private:SetupBagHooks()
-	local frame = CreateFrame("Frame")
-	frame:RegisterEvent("PLAYER_LOGIN")
-	frame:RegisterEvent("ADDON_LOADED")
-
-	frame:SetScript("OnEvent", function(self, event)
-		if event == "PLAYER_LOGIN" or event == "ADDON_LOADED" then
-			C_Timer.After(1, function()
-				for bagID = 0, NUM_BAG_SLOTS do
-					for slotID = 1, GetContainerNumSlots(bagID) do
-						local itemButton = _G["ContainerFrame"..(bagID+1).."Item"..slotID]
-						if itemButton and not itemButton.tsmMailingHooked then
-							itemButton:HookScript("OnClick", function(self, button)
-								if button == "RightButton" and not IsModifiedClick() then
-									if private.isTabActive and private.frame then
-										local parentBag = self:GetParent():GetID()
-										local slot = self:GetID()
-										private:AddItemFromBag(parentBag, slot)
-									end
-								end
-							end)
-							itemButton.tsmMailingHooked = true
-						end
-					end
-				end
-			end)
+	local oldUseContainerItem = UseContainerItem
+	UseContainerItem = function(bag, slot, ...)
+		if private.isTabActive and private.frame and IsControlKeyDown() then
+			private:AddItemFromBag(bag, slot)
+			return
 		end
-	end)
+		oldUseContainerItem(bag, slot, ...)
+	end
 end
 
 function Send:OnEnable()
