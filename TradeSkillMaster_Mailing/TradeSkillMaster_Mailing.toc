@@ -23,10 +23,10 @@ Locale\zhTW.lua
 Locale\ptBR.lua
 
 TradeSkillMaster_Mailing.lua
-Modules\MailTab.lua
 Modules\Inbox.lua
 Modules\Send.lua
 Modules\Groups.lua
 Modules\Other.lua
-Modules\Options.lua
 Modules\AutoMail.lua
+Modules\MailTab.lua
+Modules\Options.lua
