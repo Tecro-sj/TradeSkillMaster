@@ -60,9 +60,9 @@ function private:CreateMailTab()
 		if TSM.db.global.defaultPage == 1 then
 			private.frame.inboxBtn:Click()
 		elseif TSM.db.global.defaultPage == 2 then
-			private.frame.groupsBtn:Click()
+			private.frame.sendBtn:Click()
 		elseif TSM.db.global.defaultPage == 3 then
-			private.frame.quickSendBtn:Click()
+			private.frame.groupsBtn:Click()
 		elseif TSM.db.global.defaultPage == 4 then
 			private.frame.otherBtn:Click()
 		end
@@ -155,24 +155,24 @@ end
 function private:CreateTabs(frame)
 	local function OnButtonClick(self)
 		frame.inboxTab:Hide()
+		frame.sendTab:Hide()
 		frame.groupsTab:Hide()
 		frame.otherTab:Hide()
-		frame.quickSendTab:Hide()
-		
+
 		frame.inboxBtn:UnlockHighlight()
+		frame.sendBtn:UnlockHighlight()
 		frame.groupsBtn:UnlockHighlight()
 		frame.otherBtn:UnlockHighlight()
-		frame.quickSendBtn:UnlockHighlight()
 		self:LockHighlight()
-	
+
 		if self == frame.inboxBtn then
 			frame.inboxTab:Show()
+		elseif self == frame.sendBtn then
+			frame.sendTab:Show()
 		elseif self == frame.groupsBtn then
 			frame.groupsTab:Show()
 		elseif self == frame.otherBtn then
 			frame.otherTab:Show()
-		elseif self == frame.quickSendBtn then
-			frame.quickSendTab:Show()
 		end
 	end
 	
@@ -183,25 +183,25 @@ function private:CreateTabs(frame)
 	button:SetText(L["Inbox"])
 	button:SetScript("OnClick", OnButtonClick)
 	frame.inboxBtn = button
-	
+
 	local button = TSMAPI.GUI:CreateButton(frame, 15)
 	button:SetPoint("TOPLEFT", frame.inboxBtn, "TOPRIGHT", 5, 0)
+	button:SetHeight(20)
+	button:SetWidth(55)
+	button:SetText(L["Send"])
+	button:SetScript("OnClick", OnButtonClick)
+	frame.sendBtn = button
+
+	local button = TSMAPI.GUI:CreateButton(frame, 15)
+	button:SetPoint("TOPLEFT", frame.sendBtn, "TOPRIGHT", 5, 0)
 	button:SetHeight(20)
 	button:SetWidth(95)
 	button:SetText(L["TSM Groups"])
 	button:SetScript("OnClick", OnButtonClick)
 	frame.groupsBtn = button
-	
+
 	local button = TSMAPI.GUI:CreateButton(frame, 15)
 	button:SetPoint("TOPLEFT", frame.groupsBtn, "TOPRIGHT", 5, 0)
-	button:SetHeight(20)
-	button:SetWidth(85)
-	button:SetText(L["Quick Send"])
-	button:SetScript("OnClick", OnButtonClick)
-	frame.quickSendBtn = button
-	
-	local button = TSMAPI.GUI:CreateButton(frame, 15)
-	button:SetPoint("TOPLEFT", frame.quickSendBtn, "TOPRIGHT", 5, 0)
 	button:SetPoint("TOPRIGHT", -5, -40)
 	button:SetHeight(20)
 	button:SetText(L["Other"])
@@ -216,10 +216,10 @@ function private:CreateTabs(frame)
 	
 	frame.inboxTab = TSM.Inbox:CreateTab(content)
 	frame.inboxTab:Hide()
+	frame.sendTab = TSM.Send:CreateTab(content)
+	frame.sendTab:Hide()
 	frame.groupsTab = TSM.Groups:CreateTab(content)
 	frame.groupsTab:Hide()
 	frame.otherTab = TSM.Other:CreateTab(content)
 	frame.otherTab:Hide()
-	frame.quickSendTab = TSM.QuickSend:CreateTab(content)
-	frame.quickSendTab:Hide()
 end
