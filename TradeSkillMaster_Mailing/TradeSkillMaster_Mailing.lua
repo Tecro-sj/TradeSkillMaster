@@ -30,11 +30,14 @@ local savedDBDefaults = {
 		defaultPage = 1,
 		showReloadBtn = true,
 		keepMailSpace = 0,
+		contacts = {},
+		recentlyMailed = {},
 	},
 	realm = {
 		deMailTarget = "",
 		mailTargets = {},
 		mailItems = {},
+		alts = {},
 	},
 	char = {
 		goldMailTarget = "",

@@ -440,6 +440,7 @@ function private:SendSingleMail()
 		SendMail(private.target, private.subject, private.body)
 	end
 
+	private:AddToRecentlyMailed(private.target)
 	TSMAPI:Print(format(L["Sending mail to %s..."], private.target))
 end
 
@@ -479,6 +480,7 @@ function private:SendMultipleMails()
 		end
 	end
 
+	private:AddToRecentlyMailed(private.target)
 	TSMAPI:Print(format(L["Sending %d mails to %s..."], mailCount, private.target))
 end
 
@@ -528,13 +530,13 @@ function private:OnContactMenuClick(option, parentFrame)
 	if option == "Close" then
 		return
 	elseif option == "Add Contact" then
-		TSMAPI:Print("Add Contact - Not yet implemented")
+		private:ShowAddContactDialog(parentFrame)
 	elseif option == "Remove Contact" then
-		TSMAPI:Print("Remove Contact - Not yet implemented")
+		private:ShowRemoveContactDialog(parentFrame)
 	elseif option == "Recently Mailed" then
-		TSMAPI:Print("Recently Mailed - Not yet implemented")
+		private:ShowRecentlyMailedList(parentFrame)
 	elseif option == "Alts" then
-		TSMAPI:Print("Alts - Not yet implemented")
+		private:ShowAltsList(parentFrame)
 	elseif option == "Friends" then
 		private:ShowFriendsList(parentFrame)
 	elseif option == "Guild" then
@@ -543,13 +545,72 @@ function private:OnContactMenuClick(option, parentFrame)
 end
 
 function private:ShowFriendsList(parentFrame)
+	ShowFriends()
 	local numFriends = GetNumFriends()
 	if numFriends == 0 then
 		TSMAPI:Print(L["You have no friends online."])
 		return
 	end
 
-	TSMAPI:Print("Friends list - Feature in development")
+	local friendsList = {}
+	for i = 1, numFriends do
+		local name, level, class, zone, connected = GetFriendInfo(i)
+		if connected and name then
+			table.insert(friendsList, name)
+		end
+	end
+
+	if #friendsList == 0 then
+		TSMAPI:Print(L["You have no friends online."])
+		return
+	end
+
+	local menu = CreateFrame("Frame", nil, UIParent)
+	menu:SetPoint("CENTER")
+	menu:SetWidth(250)
+	menu:SetHeight(math.min(300, 40 + (#friendsList * 22)))
+	menu:SetFrameStrata("DIALOG")
+	TSMAPI.Design:SetFrameBackdropColor(menu)
+
+	local titleLabel = TSMAPI.GUI:CreateLabel(menu, "normal")
+	titleLabel:SetPoint("TOP", 0, -10)
+	titleLabel:SetText("Friends")
+
+	local scrollFrame = CreateFrame("ScrollFrame", nil, menu)
+	scrollFrame:SetPoint("TOPLEFT", 10, -35)
+	scrollFrame:SetPoint("BOTTOMRIGHT", -10, 35)
+
+	local content = CreateFrame("Frame", nil, scrollFrame)
+	content:SetWidth(230)
+	content:SetHeight(#friendsList * 22)
+	scrollFrame:SetScrollChild(content)
+
+	for i, name in ipairs(friendsList) do
+		local btn = TSMAPI.GUI:CreateButton(content, 15)
+		btn:SetPoint("TOPLEFT", 0, -((i - 1) * 22))
+		btn:SetPoint("TOPRIGHT", 0, -((i - 1) * 22))
+		btn:SetHeight(20)
+		btn:SetText(name)
+		btn:SetScript("OnClick", function()
+			private.target = name
+			if parentFrame.targetBox then
+				parentFrame.targetBox:SetText(name)
+			end
+			private:UpdateAutoSubject()
+			menu:Hide()
+		end)
+	end
+
+	local closeBtn = TSMAPI.GUI:CreateButton(menu, 15)
+	closeBtn:SetPoint("BOTTOM", 0, 10)
+	closeBtn:SetWidth(100)
+	closeBtn:SetHeight(20)
+	closeBtn:SetText("Close")
+	closeBtn:SetScript("OnClick", function()
+		menu:Hide()
+	end)
+
+	menu:Show()
 end
 
 function private:ShowGuildList(parentFrame)
@@ -558,7 +619,296 @@ function private:ShowGuildList(parentFrame)
 		return
 	end
 
-	TSMAPI:Print("Guild list - Feature in development")
+	GuildRoster()
+	local numMembers = GetNumGuildMembers()
+	if numMembers == 0 then
+		TSMAPI:Print("No guild members found.")
+		return
+	end
+
+	local guildList = {}
+	local playerName = UnitName("player")
+	for i = 1, numMembers do
+		local name, rank, rankIndex, level, class, zone, note, officernote, online = GetGuildRosterInfo(i)
+		if online and name and name ~= playerName then
+			table.insert(guildList, name)
+		end
+	end
+
+	if #guildList == 0 then
+		TSMAPI:Print("No guild members online.")
+		return
+	end
+
+	table.sort(guildList)
+
+	local menu = CreateFrame("Frame", nil, UIParent)
+	menu:SetPoint("CENTER")
+	menu:SetWidth(250)
+	menu:SetHeight(math.min(300, 40 + (#guildList * 22)))
+	menu:SetFrameStrata("DIALOG")
+	TSMAPI.Design:SetFrameBackdropColor(menu)
+
+	local titleLabel = TSMAPI.GUI:CreateLabel(menu, "normal")
+	titleLabel:SetPoint("TOP", 0, -10)
+	titleLabel:SetText("Guild Members")
+
+	local scrollFrame = CreateFrame("ScrollFrame", nil, menu)
+	scrollFrame:SetPoint("TOPLEFT", 10, -35)
+	scrollFrame:SetPoint("BOTTOMRIGHT", -10, 35)
+
+	local content = CreateFrame("Frame", nil, scrollFrame)
+	content:SetWidth(230)
+	content:SetHeight(#guildList * 22)
+	scrollFrame:SetScrollChild(content)
+
+	for i, name in ipairs(guildList) do
+		local btn = TSMAPI.GUI:CreateButton(content, 15)
+		btn:SetPoint("TOPLEFT", 0, -((i - 1) * 22))
+		btn:SetPoint("TOPRIGHT", 0, -((i - 1) * 22))
+		btn:SetHeight(20)
+		btn:SetText(name)
+		btn:SetScript("OnClick", function()
+			private.target = name
+			if parentFrame.targetBox then
+				parentFrame.targetBox:SetText(name)
+			end
+			private:UpdateAutoSubject()
+			menu:Hide()
+		end)
+	end
+
+	local closeBtn = TSMAPI.GUI:CreateButton(menu, 15)
+	closeBtn:SetPoint("BOTTOM", 0, 10)
+	closeBtn:SetWidth(100)
+	closeBtn:SetHeight(20)
+	closeBtn:SetText("Close")
+	closeBtn:SetScript("OnClick", function()
+		menu:Hide()
+	end)
+
+	menu:Show()
+end
+
+function private:AddToRecentlyMailed(targetName)
+	if not TSM.db.global.recentlyMailed then
+		TSM.db.global.recentlyMailed = {}
+	end
+
+	for i, name in ipairs(TSM.db.global.recentlyMailed) do
+		if name == targetName then
+			table.remove(TSM.db.global.recentlyMailed, i)
+			break
+		end
+	end
+
+	table.insert(TSM.db.global.recentlyMailed, 1, targetName)
+
+	if #TSM.db.global.recentlyMailed > 20 then
+		table.remove(TSM.db.global.recentlyMailed)
+	end
+end
+
+function private:ShowAddContactDialog(parentFrame)
+	StaticPopupDialogs["TSM_MAILING_ADD_CONTACT"] = {
+		text = "Enter contact name:",
+		button1 = "Add",
+		button2 = "Cancel",
+		hasEditBox = true,
+		OnAccept = function(self)
+			local name = self.editBox:GetText():trim()
+			if name ~= "" then
+				private:AddContact(name)
+				TSMAPI:Print(format("Added %s to contacts.", name))
+			end
+		end,
+		timeout = 0,
+		whileDead = true,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
+	StaticPopup_Show("TSM_MAILING_ADD_CONTACT")
+end
+
+function private:AddContact(name)
+	if not TSM.db.global.contacts then
+		TSM.db.global.contacts = {}
+	end
+
+	for _, contact in ipairs(TSM.db.global.contacts) do
+		if contact == name then
+			return
+		end
+	end
+
+	table.insert(TSM.db.global.contacts, name)
+	table.sort(TSM.db.global.contacts)
+end
+
+function private:ShowRemoveContactDialog(parentFrame)
+	if not TSM.db.global.contacts or #TSM.db.global.contacts == 0 then
+		TSMAPI:Print("No contacts to remove.")
+		return
+	end
+
+	private:ShowContactSelectionList(parentFrame, "Remove Contact", function(name)
+		private:RemoveContact(name)
+		TSMAPI:Print(format("Removed %s from contacts.", name))
+	end)
+end
+
+function private:RemoveContact(name)
+	if not TSM.db.global.contacts then return end
+
+	for i, contact in ipairs(TSM.db.global.contacts) do
+		if contact == name then
+			table.remove(TSM.db.global.contacts, i)
+			break
+		end
+	end
+end
+
+function private:ShowRecentlyMailedList(parentFrame)
+	if not TSM.db.global.recentlyMailed or #TSM.db.global.recentlyMailed == 0 then
+		TSMAPI:Print("No recently mailed contacts.")
+		return
+	end
+
+	private:ShowContactSelectionList(parentFrame, "Recently Mailed", function(name)
+		private.target = name
+		if parentFrame.targetBox then
+			parentFrame.targetBox:SetText(name)
+		end
+		private:UpdateAutoSubject()
+	end)
+end
+
+function private:ShowAltsList(parentFrame)
+	local realm = GetRealmName()
+	if not TSM.db.realm.alts then
+		TSM.db.realm.alts = {}
+	end
+
+	if #TSM.db.realm.alts == 0 then
+		TSMAPI:Print("No alts configured. Add your alt names to the list.")
+		private:ShowAddAltDialog(parentFrame)
+		return
+	end
+
+	private:ShowContactSelectionList(parentFrame, "Alts", function(name)
+		private.target = name
+		if parentFrame.targetBox then
+			parentFrame.targetBox:SetText(name)
+		end
+		private:UpdateAutoSubject()
+	end, true)
+end
+
+function private:ShowAddAltDialog(parentFrame)
+	StaticPopupDialogs["TSM_MAILING_ADD_ALT"] = {
+		text = "Enter alt character name:",
+		button1 = "Add",
+		button2 = "Cancel",
+		hasEditBox = true,
+		OnAccept = function(self)
+			local name = self.editBox:GetText():trim()
+			if name ~= "" then
+				private:AddAlt(name)
+				TSMAPI:Print(format("Added %s to alts list.", name))
+			end
+		end,
+		timeout = 0,
+		whileDead = true,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
+	StaticPopup_Show("TSM_MAILING_ADD_ALT")
+end
+
+function private:AddAlt(name)
+	if not TSM.db.realm.alts then
+		TSM.db.realm.alts = {}
+	end
+
+	for _, alt in ipairs(TSM.db.realm.alts) do
+		if alt == name then
+			return
+		end
+	end
+
+	table.insert(TSM.db.realm.alts, name)
+	table.sort(TSM.db.realm.alts)
+end
+
+function private:ShowContactSelectionList(parentFrame, title, onSelect, isAlts)
+	local listData = {}
+
+	if title == "Remove Contact" then
+		listData = TSM.db.global.contacts or {}
+	elseif title == "Recently Mailed" then
+		listData = TSM.db.global.recentlyMailed or {}
+	elseif title == "Alts" then
+		listData = TSM.db.realm.alts or {}
+	end
+
+	if #listData == 0 then
+		return
+	end
+
+	local menu = CreateFrame("Frame", nil, UIParent)
+	menu:SetPoint("CENTER")
+	menu:SetWidth(250)
+	menu:SetHeight(math.min(300, 40 + (#listData * 22)))
+	menu:SetFrameStrata("DIALOG")
+	TSMAPI.Design:SetFrameBackdropColor(menu)
+
+	local titleLabel = TSMAPI.GUI:CreateLabel(menu, "normal")
+	titleLabel:SetPoint("TOP", 0, -10)
+	titleLabel:SetText(title)
+
+	local scrollFrame = CreateFrame("ScrollFrame", nil, menu)
+	scrollFrame:SetPoint("TOPLEFT", 10, -35)
+	scrollFrame:SetPoint("BOTTOMRIGHT", -10, 35)
+
+	local content = CreateFrame("Frame", nil, scrollFrame)
+	content:SetWidth(230)
+	content:SetHeight(#listData * 22)
+	scrollFrame:SetScrollChild(content)
+
+	for i, name in ipairs(listData) do
+		local btn = TSMAPI.GUI:CreateButton(content, 15)
+		btn:SetPoint("TOPLEFT", 0, -((i - 1) * 22))
+		btn:SetPoint("TOPRIGHT", 0, -((i - 1) * 22))
+		btn:SetHeight(20)
+		btn:SetText(name)
+		btn:SetScript("OnClick", function()
+			onSelect(name)
+			menu:Hide()
+		end)
+	end
+
+	local closeBtn = TSMAPI.GUI:CreateButton(menu, 15)
+	closeBtn:SetPoint("BOTTOM", 0, 10)
+	closeBtn:SetWidth(100)
+	closeBtn:SetHeight(20)
+	closeBtn:SetText("Close")
+	closeBtn:SetScript("OnClick", function()
+		menu:Hide()
+	end)
+
+	if isAlts then
+		local addAltBtn = TSMAPI.GUI:CreateButton(menu, 15)
+		addAltBtn:SetPoint("BOTTOMRIGHT", closeBtn, "BOTTOMLEFT", -5, 0)
+		addAltBtn:SetWidth(80)
+		addAltBtn:SetHeight(20)
+		addAltBtn:SetText("Add Alt")
+		addAltBtn:SetScript("OnClick", function()
+			menu:Hide()
+			private:ShowAddAltDialog(parentFrame)
+		end)
+	end
+
+	menu:Show()
 end
 
 Send.frame = nil
