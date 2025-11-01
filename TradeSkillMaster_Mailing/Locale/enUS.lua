@@ -163,3 +163,13 @@ L["This slider controls how long the mail sending code waits between consecutive
 L["This slider controls how much free space to keep in your bags when looting from the mailbox. This only applies to bags that any item can go in."] = true
 L["This tab allows you to quickly send any quantity of an item to another character. You can also specify a COD to set on the mail (per item)."] = true
 L["When you shift-click a send mail button, after the initial send, it will check for new items to send at this interval."] = true
+L["To:"] = true
+L["Enter the name of the player you want to send this mail to."] = true
+L["No contacts to remove."] = true
+L["Removed %s from contacts."] = true
+L["No recently mailed contacts."] = true
+L["No alts configured. Add your alt names to the list."] = true
+L["Added %s to contacts."] = true
+L["Added %s to alts list."] = true
+L["No guild members found."] = true
+L["No guild members online."] = true

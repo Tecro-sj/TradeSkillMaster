@@ -204,14 +204,6 @@ function Send:CreateTab(parent)
 	sendMoneyBtn:SetWidth(100)
 	sendMoneyBtn:SetHeight(20)
 	sendMoneyBtn:SetText(L["Send Money"])
-	sendMoneyBtn:SetScript("OnClick", function(self)
-		private.moneyMode = "send"
-		sendMoneyBtn:LockHighlight()
-		codBtn:UnlockHighlight()
-		private:UpdateAutoSubject()
-	end)
-	sendMoneyBtn.tooltip = L["Send money directly to the recipient."]
-	sendMoneyBtn:LockHighlight()
 	frame.sendMoneyBtn = sendMoneyBtn
 
 	local codBtn = TSMAPI.GUI:CreateButton(frame, 15)
@@ -219,14 +211,24 @@ function Send:CreateTab(parent)
 	codBtn:SetWidth(100)
 	codBtn:SetHeight(20)
 	codBtn:SetText(L["C.O.D."])
+	frame.codBtn = codBtn
+
+	sendMoneyBtn:SetScript("OnClick", function(self)
+		private.moneyMode = "send"
+		sendMoneyBtn:LockHighlight()
+		frame.codBtn:UnlockHighlight()
+		private:UpdateAutoSubject()
+	end)
+	sendMoneyBtn.tooltip = L["Send money directly to the recipient."]
+	sendMoneyBtn:LockHighlight()
+
 	codBtn:SetScript("OnClick", function(self)
 		private.moneyMode = "cod"
 		codBtn:LockHighlight()
-		sendMoneyBtn:UnlockHighlight()
+		frame.sendMoneyBtn:UnlockHighlight()
 		private:UpdateAutoSubject()
 	end)
 	codBtn.tooltip = L["Send items with Cash on Delivery - recipient pays on receiving."]
-	frame.codBtn = codBtn
 
 	yOffset = yOffset - 35
 	local sendBtn = TSMAPI.GUI:CreateButton(frame, 15)
@@ -622,7 +624,7 @@ function private:ShowGuildList(parentFrame)
 	GuildRoster()
 	local numMembers = GetNumGuildMembers()
 	if numMembers == 0 then
-		TSMAPI:Print("No guild members found.")
+		TSMAPI:Print(L["No guild members found."])
 		return
 	end
 
@@ -636,7 +638,7 @@ function private:ShowGuildList(parentFrame)
 	end
 
 	if #guildList == 0 then
-		TSMAPI:Print("No guild members online.")
+		TSMAPI:Print(L["No guild members online."])
 		return
 	end
 
@@ -719,7 +721,7 @@ function private:ShowAddContactDialog(parentFrame)
 			local name = self.editBox:GetText():trim()
 			if name ~= "" then
 				private:AddContact(name)
-				TSMAPI:Print(format("Added %s to contacts.", name))
+				TSMAPI:Print(format(L["Added %s to contacts."], name))
 			end
 		end,
 		timeout = 0,
@@ -747,13 +749,13 @@ end
 
 function private:ShowRemoveContactDialog(parentFrame)
 	if not TSM.db.global.contacts or #TSM.db.global.contacts == 0 then
-		TSMAPI:Print("No contacts to remove.")
+		TSMAPI:Print(L["No contacts to remove."])
 		return
 	end
 
 	private:ShowContactSelectionList(parentFrame, "Remove Contact", function(name)
 		private:RemoveContact(name)
-		TSMAPI:Print(format("Removed %s from contacts.", name))
+		TSMAPI:Print(format(L["Removed %s from contacts."], name))
 	end)
 end
 
@@ -770,7 +772,7 @@ end
 
 function private:ShowRecentlyMailedList(parentFrame)
 	if not TSM.db.global.recentlyMailed or #TSM.db.global.recentlyMailed == 0 then
-		TSMAPI:Print("No recently mailed contacts.")
+		TSMAPI:Print(L["No recently mailed contacts."])
 		return
 	end
 
@@ -790,7 +792,7 @@ function private:ShowAltsList(parentFrame)
 	end
 
 	if #TSM.db.realm.alts == 0 then
-		TSMAPI:Print("No alts configured. Add your alt names to the list.")
+		TSMAPI:Print(L["No alts configured. Add your alt names to the list."])
 		private:ShowAddAltDialog(parentFrame)
 		return
 	end
@@ -814,7 +816,7 @@ function private:ShowAddAltDialog(parentFrame)
 			local name = self.editBox:GetText():trim()
 			if name ~= "" then
 				private:AddAlt(name)
-				TSMAPI:Print(format("Added %s to alts list.", name))
+				TSMAPI:Print(format(L["Added %s to alts list."], name))
 			end
 		end,
 		timeout = 0,
