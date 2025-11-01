@@ -18,7 +18,9 @@ local private = {
 	money = 0,
 	moneyMode = "send",
 	maxItemSlots = 12,
-	contactsMenuOpen = false
+	contactsMenuOpen = false,
+	frame = nil,
+	isTabActive = false
 }
 
 local CONTACT_MENU_OPTIONS = {
@@ -38,6 +40,16 @@ function Send:CreateTab(parent)
 	frame:SetPoint("BOTTOMRIGHT", -5, 5)
 	frame:SetAllPoints()
 	TSMAPI.Design:SetFrameColor(frame)
+
+	private.frame = frame
+
+	frame:SetScript("OnShow", function()
+		private.isTabActive = true
+	end)
+
+	frame:SetScript("OnHide", function()
+		private.isTabActive = false
+	end)
 
 	local yOffset = -10
 
@@ -314,31 +326,68 @@ function private:CreateItemSlot(parent, index)
 end
 
 function private:OnItemDrag(slot)
-	local cType, _, link = GetCursorInfo()
+	local cType, itemID, link, quantity = GetCursorInfo()
 	if cType == "item" then
-		local itemString = TSMAPI:GetItemString(link)
-		local numHave = 0
-		for _, _, iString, quantity in TSMAPI:GetBagIterator() do
-			if iString == itemString then
-				numHave = numHave + quantity
-			end
-		end
+		if not quantity then quantity = 1 end
 
 		slot.itemLink = link
-		slot.quantity = numHave
+		slot.quantity = quantity
 
 		local _, _, _, _, _, _, _, _, _, texture = GetItemInfo(link)
 		slot.icon:SetTexture(texture)
 
-		if numHave > 1 then
-			slot.count:SetText(numHave)
+		if quantity > 1 then
+			slot.count:SetText(quantity)
 		else
 			slot.count:SetText("")
 		end
 
-		private.items[slot.index] = {link = link, quantity = numHave}
+		private.items[slot.index] = {link = link, quantity = quantity}
 
 		ClearCursor()
+		private:UpdateAutoSubject()
+	end
+end
+
+function private:AddItemFromBag(bag, slot)
+	if not private.isTabActive or not private.frame then
+		return
+	end
+
+	local link = GetContainerItemLink(bag, slot)
+	if not link then return end
+
+	local _, count = GetContainerItemInfo(bag, slot)
+	if not count then count = 1 end
+
+	local emptySlot = nil
+	for i = 1, private.maxItemSlots do
+		if not private.items[i] then
+			emptySlot = i
+			break
+		end
+	end
+
+	if not emptySlot then
+		TSMAPI:Print(L["No empty item slots available."])
+		return
+	end
+
+	local itemSlot = private.frame.itemSlots[emptySlot]
+	if itemSlot then
+		itemSlot.itemLink = link
+		itemSlot.quantity = count
+
+		local _, _, _, _, _, _, _, _, _, texture = GetItemInfo(link)
+		itemSlot.icon:SetTexture(texture)
+
+		if count > 1 then
+			itemSlot.count:SetText(count)
+		else
+			itemSlot.count:SetText("")
+		end
+
+		private.items[emptySlot] = {link = link, quantity = count}
 		private:UpdateAutoSubject()
 	end
 end
@@ -911,6 +960,40 @@ function private:ShowContactSelectionList(parentFrame, title, onSelect, isAlts)
 	end
 
 	menu:Show()
+end
+
+function private:SetupBagHooks()
+	local frame = CreateFrame("Frame")
+	frame:RegisterEvent("PLAYER_LOGIN")
+	frame:RegisterEvent("ADDON_LOADED")
+
+	frame:SetScript("OnEvent", function(self, event)
+		if event == "PLAYER_LOGIN" or event == "ADDON_LOADED" then
+			C_Timer.After(1, function()
+				for bagID = 0, NUM_BAG_SLOTS do
+					for slotID = 1, GetContainerNumSlots(bagID) do
+						local itemButton = _G["ContainerFrame"..(bagID+1).."Item"..slotID]
+						if itemButton and not itemButton.tsmMailingHooked then
+							itemButton:HookScript("OnClick", function(self, button)
+								if button == "RightButton" and not IsModifiedClick() then
+									if private.isTabActive and private.frame then
+										local parentBag = self:GetParent():GetID()
+										local slot = self:GetID()
+										private:AddItemFromBag(parentBag, slot)
+									end
+								end
+							end)
+							itemButton.tsmMailingHooked = true
+						end
+					end
+				end
+			end)
+		end
+	end)
+end
+
+function Send:OnEnable()
+	private:SetupBagHooks()
 end
 
 Send.frame = nil

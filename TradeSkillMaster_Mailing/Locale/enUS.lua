@@ -173,3 +173,4 @@ L["Added %s to contacts."] = true
 L["Added %s to alts list."] = true
 L["No guild members found."] = true
 L["No guild members online."] = true
+L["No empty item slots available."] = true
