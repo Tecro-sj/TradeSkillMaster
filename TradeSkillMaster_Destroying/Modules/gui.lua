@@ -130,6 +130,9 @@ function private:CreateDestroyingFrame()
 	destroyBtn:SetAttribute("type1", "macro")
 	destroyBtn:SetAttribute("macrotext1", "")
 	destroyBtn:SetScript("PreClick", function()
+			if InCombatLockdown() then
+				return
+			end
 			if not destroyBtn:IsVisible() or #private.data == 0 then
 				destroyBtn:SetAttribute("macrotext1", "")
 			else
