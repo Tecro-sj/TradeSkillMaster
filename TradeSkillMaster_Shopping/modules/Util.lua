@@ -426,6 +426,22 @@ function private:ProcessItem(itemString, auctionItem)
 			return
 		end
 	end
+
+	-- check for usable filter - exclude already learned recipes/patterns
+	if query.usable and query.usable > 0 then
+		local itemID = TSMAPI:GetItemID(itemString)
+		if itemID then
+			local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemID)
+			if itemType and (itemType == GetItemClassInfo(9)) then -- Recipe class
+				-- It's a recipe/pattern, check if already learned
+				local spellID = select(2, GetItemSpell(itemID))
+				if spellID and IsSpellKnown(spellID) then
+					private.auctions[itemString] = nil
+					return
+				end
+			end
+		end
+	end
 	
 	-- remove any records that don't have buyouts
 	for i=#auctionItem.records, 1, -1 do
