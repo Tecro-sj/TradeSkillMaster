@@ -432,7 +432,7 @@ function private:ProcessItem(itemString, auctionItem)
 		local itemID = TSMAPI:GetItemID(itemString)
 		if itemID then
 			local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemID)
-			if itemType and (itemType == GetItemClassInfo(9)) then -- Recipe class
+			if itemType and itemType == "Recipe" then -- Recipe/Pattern class
 				-- It's a recipe/pattern, check if already learned
 				local spellID = select(2, GetItemSpell(itemID))
 				if spellID then
