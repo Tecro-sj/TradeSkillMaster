@@ -434,16 +434,10 @@ function private:ProcessItem(itemString, auctionItem)
 			local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemID)
 			if itemType and itemType == "Recipe" then -- Recipe/Pattern class
 				-- It's a recipe/pattern, check if already learned
-				local spellID = select(2, GetItemSpell(itemID))
-				if spellID then
+				local spellName, spellID = GetItemSpell(itemID)
+				if spellID and type(spellID) == "number" and spellID > 0 then
 					-- Check if spell is already known (for all characters/professions)
 					if IsSpellKnown(spellID) or IsSpellKnown(spellID, true) then
-						private.auctions[itemString] = nil
-						return
-					end
-					-- Additional check: if GetItemSpell returns "Already known" tooltip
-					local tooltipLine = select(2, GetItemSpell(itemID))
-					if not tooltipLine or tooltipLine == "" then
 						private.auctions[itemString] = nil
 						return
 					end
