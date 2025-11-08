@@ -198,25 +198,41 @@ function private:UpdateST(forceShow)
 			local spell, perDestroy = TSM:IsDestroyable(bag, slot, itemString)
 			local link = GetContainerItemLink(bag, slot)
 			if spell and quantity >= perDestroy then
-				local row = {
-					cols = {
-						{
-							value = link,
+				local shouldAdd = true
+
+				-- Check if we should hide unprofitable disenchants
+				if TSM.db.global.hideUnprofitable and spell == GetSpellInfo(TSM.spells.disenchant) then
+					local disenchantValue = TSMAPI:GetCustomPriceValue("Destroy", itemString)
+					local vendorValue = TSMAPI:GetCustomPriceValue("VendorSell", itemString)
+
+					if disenchantValue and vendorValue and disenchantValue > 0 and vendorValue > 0 then
+						if disenchantValue < vendorValue then
+							shouldAdd = false
+						end
+					end
+				end
+
+				if shouldAdd then
+					local row = {
+						cols = {
+							{
+								value = link,
+							},
+							{
+								value = quantity
+							},
 						},
-						{
-							value = quantity
-						},
-					},
-					itemString = itemString,
-					link = link,
-					quantity = quantity,
-					bag = bag,
-					slot = slot,
-					spell = spell,
-					perDestroy = perDestroy,
-					numDestroys = floor(quantity/perDestroy),
-				}
-				tinsert(stData, row)
+						itemString = itemString,
+						link = link,
+						quantity = quantity,
+						bag = bag,
+						slot = slot,
+						spell = spell,
+						perDestroy = perDestroy,
+						numDestroys = floor(quantity/perDestroy),
+					}
+					tinsert(stData, row)
+				end
 			end
 		end
 	end

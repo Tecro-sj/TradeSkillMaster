@@ -28,6 +28,7 @@ local savedDBDefaults = {
 		deMaxQuality = 3,
 		logDays = 3,
 		includeSoulbound = false,
+		hideUnprofitable = false,
 	},
 }
 

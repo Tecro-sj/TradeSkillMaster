@@ -50,3 +50,5 @@ L["Time"] = true
 L["Times Destroyed"] = true
 L["_ Hr _ Min ago"] = true
 L["now"] = true
+L["Hide Unprofitable Disenchants"] = true
+L["If checked, items where the disenchant value is lower than the vendor sell price will not be shown in the Destroying window."] = true

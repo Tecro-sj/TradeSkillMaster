@@ -45,5 +45,7 @@ L["%sRight-Click|r to ignore this item for this session. Hold %sshift|r to ignor
 L["Stack Size"] = "Stapelgröße" -- Needs review
 L["The destroying log will throw out any data that is older than this many days."] = "Das Zerstören Log verwirft alle Daten die älter als die angegebene Anzahl Tage sind." -- Needs review
 L["Time"] = "Zeit" -- Needs review
- 
+L["Hide Unprofitable Disenchants"] = "Unprofitable Entzauberungen ausblenden"
+L["If checked, items where the disenchant value is lower than the vendor sell price will not be shown in the Destroying window."] = "Wenn aktiviert, werden Gegenstände deren Entzauberungswert niedriger als der Händlerverkaufspreis ist nicht im Zerstören Fenster angezeigt."
+
 

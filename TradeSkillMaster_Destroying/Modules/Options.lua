@@ -402,6 +402,13 @@ function Options:LoadOptions(container)
 							settingInfo = {TSM.db.global, "includeSoulbound"},
 							tooltip = L["If checked, soulbound items can be destroyed by TSM_Destroying. USE THIS WITH EXTREME CAUTION!"],
 						},
+						{
+							type = "CheckBox",
+							label = L["Hide Unprofitable Disenchants"],
+							relativeWidth = 1,
+							settingInfo = {TSM.db.global, "hideUnprofitable"},
+							tooltip = L["If checked, items where the disenchant value is lower than the vendor sell price will not be shown in the Destroying window."],
+						},
 					},
 				},
 			},
