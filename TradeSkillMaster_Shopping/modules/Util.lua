@@ -432,12 +432,25 @@ function private:ProcessItem(itemString, auctionItem)
 		local itemID = TSMAPI:GetItemID(itemString)
 		if itemID then
 			local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemID)
-			if itemType and itemType == "Recipe" then -- Recipe/Pattern class
-				-- It's a recipe/pattern, check if already learned
+			if itemType and itemType == "Recipe" then -- Recipe/Pattern/Formula class
+				-- It's a recipe/pattern/formula, check if already learned
 				local spellName, spellID = GetItemSpell(itemID)
 				if spellID and type(spellID) == "number" and spellID > 0 then
-					-- Check if spell is already known (for all characters/professions)
-					if IsSpellKnown(spellID) or IsSpellKnown(spellID, true) then
+					-- Check if spell is already known
+					-- For regular recipes: IsSpellKnown works
+					-- For enchanting formulas: Need to check craft spells
+					local isKnown = IsSpellKnown(spellID) or IsSpellKnown(spellID, true)
+
+					-- Additional check for enchanting formulas
+					if not isKnown and itemSubType == "Enchanting" then
+						-- Check if this enchant spell is in the spellbook
+						local spellLink = GetSpellLink(spellID)
+						if spellLink then
+							isKnown = true
+						end
+					end
+
+					if isKnown then
 						private.auctions[itemString] = nil
 						return
 					end
