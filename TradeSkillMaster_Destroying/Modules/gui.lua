@@ -202,8 +202,8 @@ function private:UpdateST(forceShow)
 
 				-- Check if we should hide unprofitable disenchants
 				if TSM.db.global.hideUnprofitable and spell == GetSpellInfo(TSM.spells.disenchant) then
-					local disenchantValue = TSMAPI:GetCustomPriceValue("Destroy", itemString)
-					local vendorValue = TSMAPI:GetCustomPriceValue("VendorSell", itemString)
+					local disenchantValue = TSMAPI:GetItemValue(itemString, "Disenchant")
+					local vendorValue = TSMAPI:GetItemValue(itemString, "VendorSell")
 
 					if disenchantValue and vendorValue and disenchantValue > 0 and vendorValue > 0 then
 						if disenchantValue < vendorValue then
