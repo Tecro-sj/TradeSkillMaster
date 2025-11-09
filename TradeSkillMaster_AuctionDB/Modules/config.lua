@@ -447,6 +447,37 @@ function Config:LoadOptions(container)
 				},
 				{
 					type = "InlineGroup",
+					title = "Group Scan Options",
+					layout = "Flow",
+					children = {
+						{
+							type = "EditBox",
+							label = "Max Pages per Item",
+							value = TSM.db.profile.groupScanMaxPages,
+							relativeWidth = 0.45,
+							callback = function(_, _, value)
+								value = tonumber(value)
+								if value and value >= 1 and value <= 50 then
+									TSM.db.profile.groupScanMaxPages = value
+								else
+									TSM:Print("Invalid value. Must be between 1 and 50.")
+								end
+							end,
+							tooltip = "Maximum number of pages to scan per item during Group Scans. Lower values = much faster scans but less accurate data. Set to 50 for unlimited. Default: 50 (unlimited)",
+						},
+						{
+							type = "Label",
+							relativeWidth = 0.1
+						},
+						{
+							type = "Label",
+							text = "Limiting pages per item can significantly speed up group scans, but may result in less accurate market value calculations for items with many auctions.",
+							relativeWidth = 1.0,
+						},
+					},
+				},
+				{
+					type = "InlineGroup",
 					title = L["Search Options"],
 					layout = "Flow",
 					children = {

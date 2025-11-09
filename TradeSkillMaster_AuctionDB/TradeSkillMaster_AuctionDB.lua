@@ -43,6 +43,7 @@ local savedDBDefaults = {
 		disableGetAll = false,
 		quickScanMinAuctions = 3,
 		quickScanMaxItems = 2000,
+		groupScanMaxPages = 50,
 	},
 }
 

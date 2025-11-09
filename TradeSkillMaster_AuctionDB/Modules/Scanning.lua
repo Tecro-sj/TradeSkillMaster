@@ -531,7 +531,14 @@ function Scan:ScanNextGroupFilter(data)
 	-- from 0, so that it fills up properly by only proceeding after an item is done.
 	local progress_bar = min(100*((Scan.numFilters-#Scan.filterList)/Scan.numFilters), 100)  -- Calculate progress bar from 0-100%.
 	TSM.GUI:UpdateStatus(format(L["Scanning %d / %d (Page 1 / ?)"], ((Scan.numFilters-#Scan.filterList) + 1), Scan.numFilters), progress_bar)
-	TSMAPI.AuctionScan:RunQuery(Scan.filterList[1], GroupScanCallback)
+
+	-- Get max pages setting (50 means unlimited, anything less limits the scan)
+	local maxPages = TSM.db.profile.groupScanMaxPages or 50
+	if maxPages >= 50 then
+		maxPages = nil  -- nil means unlimited pages
+	end
+
+	TSMAPI.AuctionScan:RunQuery(Scan.filterList[1], GroupScanCallback, nil, nil, nil, maxPages)
 end
 
 function Scan:StartGroupScan(items)
