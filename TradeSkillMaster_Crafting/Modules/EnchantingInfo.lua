@@ -705,6 +705,7 @@ TSM.enchantingItemIDs = {
 	[20044]  = 46510,   -- Scroll of Enchant Weapon - Strider
 	[44486]  = 201961,   -- Scroll of Enchant Gloves - Lesser Expertise
 	[44647]  = 201964,   -- Scroll of Enchant Bracers - Lesser Expertise
+	[901429] = 911429,   -- Scroll of Enchant Cloak - Lesser Armor Penetration
 	[901431] = 911431,   -- Scroll of Enchant Cloak - Lesser Spell Penetration
 }
 	
