@@ -118,6 +118,7 @@ function TSM:RegisterModule()
 		{ key = "profession", label = L["Opens the Crafting window to the first profession."], callback = "CraftingGUI:OpenFirstProfession" },
 		{ key = "restock_help", label = "Tells you why a specific item is not being restocked and added to the queue.", callback = "RestockHelp" },
 		{ key = "tasklist", label = L["Opens or closes the standalone Task List window showing your crafting queue and materials."], callback = "CraftingGUI:CreateTaskListWindow" },
+		{ key = "rescan", label = "Rescans your currently open profession window.", callback = "RescanProfession" },
 	}
 	TSM.sync = { callback = "Sync:Callback" }
 	TSMAPI:NewModule(TSM)
@@ -361,4 +362,14 @@ function TSM:RestockHelp(link)
 	end
 	
 	print("This item will be added to the queue when you restock its group. If this isn't happening, make a post on the TSM forums with a screenshot of the item's tooltip, operation settings, and your general TSM_Crafting options.")
+end
+
+function TSM:RescanProfession()
+	if not TSM.Util:IsProfessionReady() then
+		TSM:Print("Please open a profession window first!")
+		return
+	end
+	TSM:Print("Starting profession rescan...")
+	TSM.Util:ScanCurrentProfession()
+	TSM:Print("Profession rescan complete!")
 end

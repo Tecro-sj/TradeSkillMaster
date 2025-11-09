@@ -89,7 +89,9 @@ end
 
 function Util:ScanCurrentProfession()
 	if not Util:IsProfessionReady() then return TSMAPI:CreateTimeDelay("craftingScanDelay", 0.1, Util.ScanCurrentProfession) end
-	
+
+	TSM:Print("DEBUG: Starting profession scan for " .. GetTradeSkillLine())
+
 	local newCrafts = {}
 	local playerName = UnitName("player")
 	local currentTradeSkill = GetTradeSkillLine()
