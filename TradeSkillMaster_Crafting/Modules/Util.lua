@@ -215,27 +215,67 @@ function Util.ScanSyncedProfessionThread(self)
 			if strfind(itemLink, "enchant:") then
 				-- result of craft is enchant
 				spellID = Util:GetSpellID(index)
-				itemID = TSM.enchantingItemIDs[spellID] and "item:"..TSM.enchantingItemIDs[spellID]..":0:0:0:0:0:0"
-				craftName = GetSpellInfo(spellID)
+				-- Try to get itemID from known enchants, otherwise use a placeholder
+				if TSM.enchantingItemIDs[spellID] then
+					itemID = "item:"..TSM.enchantingItemIDs[spellID]..":0:0:0:0:0:0"
+				else
+					-- Custom enchant not in database - use enchant link as itemID
+					itemID = "enchant:"..spellID
+				end
+				craftName = GetSpellInfo(spellID) or GetTradeSkillInfo(index)
 			elseif strfind(itemLink, "item:") then
 				-- result of craft is item
 				itemID = TSMAPI:GetItemString(itemLink)
 				craftName = TSMAPI:GetSafeItemInfo(itemLink)
 				spellID = Util:GetSpellID(index)
 			end
-			
+
 			if itemID and spellID then
 				local lNum, hNum = GetTradeSkillNumMade(index)
 				local numMade = floor(((lNum or 1) + (hNum or 1))/2)
 				local hasCD = GetSpellBaseCooldown(spellID) > 0 and 1 or nil
 				local mats = {}
 				if currentTradeSkill == TSM.enchantingName and strfind(itemLink, "enchant:") then
-					local VellumString = "item:"..TSM.VellumInfo[spellID]..":0:0:0:0:0:0"
+					-- Determine which vellum is needed
+					local vellumID
+					local hasVellumInReagents = false
 
-					mats[VellumString] = 1
-					local name = TSMAPI:GetSafeItemInfo(VellumString) or nil
-					TSM.db.realm.mats[VellumString] = TSM.db.realm.mats[VellumString] or {}
-					TSM.db.realm.mats[VellumString].name = TSM.db.realm.mats[VellumString].name or name
+					-- Check if vellum is already in the reagent list
+					for i=1, GetTradeSkillNumReagents(index) do
+						local name, texture, quantity = GetTradeSkillReagentInfo(index, i)
+						if name and (name:find("Vellum") or name:find("Pergament")) then
+							-- Found vellum in reagents, don't add it separately
+							hasVellumInReagents = true
+							break
+						end
+					end
+
+					-- Only add vellum if not already in reagents
+					if not hasVellumInReagents then
+						if TSM.VellumInfo[spellID] then
+							-- Known enchant - use predefined vellum
+							vellumID = TSM.VellumInfo[spellID]
+						else
+							-- Custom/unknown enchant - use default vellum based on skill level
+							local _, _, difficulty = GetTradeSkillInfo(index)
+							-- Use WotLK vellum IDs as fallback
+							if difficulty and difficulty == "trivial" then
+								vellumID = 38682 -- Armor Vellum I (low level)
+							elseif difficulty and difficulty == "optimal" then
+								vellumID = 38772 -- Armor Vellum II (mid level)
+							else
+								vellumID = 43146 -- Armor Vellum III (high level, WotLK default)
+							end
+						end
+					end
+
+					if vellumID then
+						local VellumString = "item:"..vellumID..":0:0:0:0:0:0"
+						mats[VellumString] = 1
+						local name = TSMAPI:GetSafeItemInfo(VellumString) or nil
+						TSM.db.realm.mats[VellumString] = TSM.db.realm.mats[VellumString] or {}
+						TSM.db.realm.mats[VellumString].name = TSM.db.realm.mats[VellumString].name or name
+					end
 					numMade = 1
 				end
 				
