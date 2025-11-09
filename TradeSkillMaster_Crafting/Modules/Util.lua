@@ -90,8 +90,6 @@ end
 function Util:ScanCurrentProfession()
 	if not Util:IsProfessionReady() then return TSMAPI:CreateTimeDelay("craftingScanDelay", 0.1, Util.ScanCurrentProfession) end
 
-	TSM:Print("DEBUG: Starting profession scan for " .. GetTradeSkillLine())
-
 	local newCrafts = {}
 	local playerName = UnitName("player")
 	local currentTradeSkill = GetTradeSkillLine()
@@ -122,7 +120,6 @@ function Util:ScanCurrentProfession()
 				spellID = Util:GetSpellID(index)
 				itemID = TSM.enchantingItemIDs[spellID] and "item:"..TSM.enchantingItemIDs[spellID]..":0:0:0:0:0:0"
 				craftName = GetSpellInfo(spellID)
-				TSM:Print("DEBUG: Found enchant spell " .. spellID .. " (" .. (craftName or "unknown") .. "), itemID=" .. (itemID or "NIL"))
 			elseif strfind(itemLink, "item:") then
 				-- result of craft is item
 				itemID = TSMAPI:GetItemString(itemLink)
@@ -185,11 +182,6 @@ function Util:ScanCurrentProfession()
 							end
 							presetGroupInfo[itemString] = TSMAPI:JoinGroupPath("Professions", currentTradeSkill, "Crafts")
 						end
-					end
-				else
-					-- Show debug for all failed enchants
-					if spellID and craftName then
-						TSM:Print("DEBUG: SpellID " .. spellID .. " (" .. craftName .. ") skipped during scan. " .. debugInfo)
 					end
 				end
 			end
@@ -348,10 +340,6 @@ function Util.ScanSyncedProfessionThread(self)
 					local queued = TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].queued or 0
 					local intermediateQueued = TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].intermediateQueued or nil
 					newCrafts[spellID] = {name=craftName, itemID=itemID, mats=mats, hasCD=hasCD, numResult=numMade, queued=queued, intermediateQueued=intermediateQueued, players=players, profession=currentTradeSkill}
-				else
-					if not TSM.enchantingItemIDs[spellID] then
-						TSM:Print("DEBUG: SpellID " .. spellID .. " (" .. (craftName or "unknown") .. ") skipped during scan. " .. debugInfo)
-					end
 				end
 			end
 		end
