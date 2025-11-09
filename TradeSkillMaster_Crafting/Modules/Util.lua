@@ -142,10 +142,12 @@ function Util:ScanCurrentProfession()
 				end
 
 				local isValid = true
+				local debugInfo = ""
 				for i=1, GetTradeSkillNumReagents(index) do
 					local name, texture, quantity = GetTradeSkillReagentInfo(index, i)
 					if not name then
 						isValid = false
+						debugInfo = "Failed: reagent " .. i .. " has no name"
 						break
 					end
 					if not reagentLinkCache[name.."\001"..texture] then
@@ -154,6 +156,7 @@ function Util:ScanCurrentProfession()
 					local matID = GetMaterialID(reagentLinkCache[name.."\001"..texture], name, texture)
 					if not matID then
 						isValid = false
+						debugInfo = "Failed: reagent '" .. name .. "' could not get matID (texture: " .. (texture or "nil") .. ")"
 						break
 					end
 
@@ -161,7 +164,7 @@ function Util:ScanCurrentProfession()
 					TSM.db.realm.mats[matID] = TSM.db.realm.mats[matID] or {}
 					TSM.db.realm.mats[matID].name = TSM.db.realm.mats[matID].name or name
 				end
-				
+
 				if isValid then
 					local players = TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].players or {}
 					players[playerName] = true
@@ -179,6 +182,11 @@ function Util:ScanCurrentProfession()
 							end
 							presetGroupInfo[itemString] = TSMAPI:JoinGroupPath("Professions", currentTradeSkill, "Crafts")
 						end
+					end
+				else
+					-- Only show debug for custom enchants (not in database)
+					if spellID and craftName and not TSM.enchantingItemIDs[spellID] then
+						TSM:Print("DEBUG: SpellID " .. spellID .. " (" .. craftName .. ") skipped during scan. " .. debugInfo)
 					end
 				end
 			end
@@ -308,10 +316,12 @@ function Util.ScanSyncedProfessionThread(self)
 				end
 				
 				local isValid = true
+				local debugInfo = ""
 				for i=1, GetTradeSkillNumReagents(index) do
 					local name, texture, quantity = GetTradeSkillReagentInfo(index, i)
 					if not name then
 						isValid = false
+						debugInfo = "Failed: reagent " .. i .. " has no name"
 						break
 					end
 					if not reagentLinkCache[name.."\001"..texture] then
@@ -320,6 +330,7 @@ function Util.ScanSyncedProfessionThread(self)
 					local matID = GetMaterialID(reagentLinkCache[name.."\001"..texture], name, texture)
 					if not matID then
 						isValid = false
+						debugInfo = "Failed: reagent '" .. name .. "' could not get matID"
 						break
 					end
 
@@ -334,6 +345,10 @@ function Util.ScanSyncedProfessionThread(self)
 					local queued = TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].queued or 0
 					local intermediateQueued = TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].intermediateQueued or nil
 					newCrafts[spellID] = {name=craftName, itemID=itemID, mats=mats, hasCD=hasCD, numResult=numMade, queued=queued, intermediateQueued=intermediateQueued, players=players, profession=currentTradeSkill}
+				else
+					if not TSM.enchantingItemIDs[spellID] then
+						TSM:Print("DEBUG: SpellID " .. spellID .. " (" .. (craftName or "unknown") .. ") skipped during scan. " .. debugInfo)
+					end
 				end
 			end
 		end
