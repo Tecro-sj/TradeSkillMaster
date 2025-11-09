@@ -116,19 +116,20 @@ function Util:ScanCurrentProfession()
 			end
 		elseif spellLink and strfind(spellLink, "enchant:") then
 			local spellID, itemID, craftName
-			
+
 			if strfind(itemLink, "enchant:") then
 				-- result of craft is enchant
 				spellID = Util:GetSpellID(index)
 				itemID = TSM.enchantingItemIDs[spellID] and "item:"..TSM.enchantingItemIDs[spellID]..":0:0:0:0:0:0"
 				craftName = GetSpellInfo(spellID)
+				TSM:Print("DEBUG: Found enchant spell " .. spellID .. " (" .. (craftName or "unknown") .. "), itemID=" .. (itemID or "NIL"))
 			elseif strfind(itemLink, "item:") then
 				-- result of craft is item
 				itemID = TSMAPI:GetItemString(itemLink)
 				craftName = TSMAPI:GetSafeItemInfo(itemLink)
 				spellID = Util:GetSpellID(index)
 			end
-			
+
 			if itemID and spellID then
 				local lNum, hNum = GetTradeSkillNumMade(index)
 				local numMade = floor(((lNum or 1) + (hNum or 1))/2)
