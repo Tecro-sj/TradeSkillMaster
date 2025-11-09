@@ -611,21 +611,24 @@ function TSM:GetDisenchantValue(link)
 	local WEAPON, ARMOR = GetAuctionItemClasses()
 	if not itemString or TSMAPI.DisenchantingData.notDisenchantable[itemString] or not (iType == ARMOR or iType == WEAPON) then return 0 end
 
-	local value = 0
+	local maxValue = 0
 	for _, data in ipairs(TSMAPI.DisenchantingData.disenchant) do
 		for item, itemData in pairs(data) do
 			if item ~= "desc" and itemData.itemTypes[iType] and itemData.itemTypes[iType][quality] then
 				for _, deData in ipairs(itemData.itemTypes[iType][quality]) do
 					if ilvl >= deData.minItemLevel and ilvl <= deData.maxItemLevel then
 						local matValue = TSM:GetCustomPrice(TSM.db.profile.destroyValueSource, item)
-						value = value + (matValue or 0) * deData.amountOfMats
+						local itemValue = (matValue or 0) * deData.amountOfMats
+						if itemValue > maxValue then
+							maxValue = itemValue
+						end
 					end
 				end
 			end
 		end
 	end
 
-	return value
+	return maxValue
 end
 
 function TSM:GetMillValue(itemString)
