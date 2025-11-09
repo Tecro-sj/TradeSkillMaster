@@ -773,11 +773,10 @@ function Scan:ProcessScanData(scanData)
 		end
 	end
 
-	-- Mark the collected auction data as a new "complete scan" with today's date,
-	-- but only if this was a normal "Full Scan" (not just a "TSM item group" scan).
-	if Scan.isScanning ~= "group" then
-		TSM.db.realm.lastCompleteScan = time()
-	end
+	-- Mark the collected auction data as a new "complete scan" with today's date.
+	-- NOTE: We always update the timestamp now, even for group scans, so that
+	-- tooltips show the correct "last scan" time for scanned items.
+	TSM.db.realm.lastCompleteScan = time()
 
 	-- Process the collected auction data.
 	TSM.Data:ProcessData(data, Scan.groupItems, verifyNewAlgorithm)
