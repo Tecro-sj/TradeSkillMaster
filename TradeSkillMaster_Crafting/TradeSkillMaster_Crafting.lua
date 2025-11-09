@@ -365,6 +365,7 @@ function TSM:RestockHelp(link)
 end
 
 function TSM:RescanProfession()
+	TSM:Print("DEBUG: RescanProfession function called!")
 	if not TSM.Util:IsProfessionReady() then
 		TSM:Print("Please open a profession window first!")
 		return
