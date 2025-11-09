@@ -307,7 +307,9 @@ end
 function Util:GetSpellID(index)
 	local spellLink = GetTradeSkillRecipeLink(index)
 	if not spellLink then return end
-	return TSMAPI:GetItemID(spellLink)
+	-- Extract spellID from enchant link (format: |cffffd000|Henchant:spellID|h[name]|h|r)
+	local spellID = tonumber(spellLink:match("enchant:(%d+)"))
+	return spellID
 end
 
 function Util:FormatTime(seconds)
