@@ -186,8 +186,8 @@ function Util:ScanCurrentProfession()
 						end
 					end
 				else
-					-- Only show debug for custom enchants (not in database)
-					if spellID and craftName and not TSM.enchantingItemIDs[spellID] then
+					-- Show debug for all failed enchants
+					if spellID and craftName then
 						TSM:Print("DEBUG: SpellID " .. spellID .. " (" .. craftName .. ") skipped during scan. " .. debugInfo)
 					end
 				end
