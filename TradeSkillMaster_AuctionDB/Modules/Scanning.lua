@@ -709,6 +709,11 @@ function Scan:DoneScanning(seconds_elapsed)
 	end
 	Scan.isScanning = nil
 	Scan.getAllLoaded = nil
+
+	-- Clear tooltip cache so that tooltips show updated prices immediately
+	if TSMAPI.ClearTooltipCache then
+		TSMAPI:ClearTooltipCache()
+	end
 end
 
 function Scan:ProcessScanData(scanData)

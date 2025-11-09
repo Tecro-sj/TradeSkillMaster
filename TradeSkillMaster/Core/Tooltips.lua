@@ -66,6 +66,12 @@ local function GetTooltipLines(itemString, quantity)
 	return tooltipLines
 end
 
+function TSMAPI:ClearTooltipCache()
+	wipe(tooltipLines)
+	tooltipLines.lastUpdate = 0
+	tooltipLines.modifier = 0
+end
+
 function private.LoadTooltip(tipFrame, link, quantity)
 	local itemString = TSMAPI:GetItemString(link)
 	if not itemString then return end
