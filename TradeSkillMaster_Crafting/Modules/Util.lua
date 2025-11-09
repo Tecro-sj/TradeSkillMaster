@@ -22,6 +22,34 @@ function GetTradeSkillReagentItemLink(skillIndex, reagentLink)
 	return select(2, scanTooltip:GetItem())
 end
 
+-- Helper function to get material ID, with fallback for custom/unknown items
+local function GetMaterialID(reagentLink, name, texture)
+	if reagentLink then
+		local matID = TSMAPI:GetItemString(reagentLink)
+		if matID then
+			return matID
+		end
+	end
+
+	-- Fallback for custom items: create placeholder ID from texture or name
+	if name and texture then
+		-- Try to extract texture ID
+		local textureID = texture:match("(%d+)$") or texture:match("Interface.-(%d+)")
+		if textureID and tonumber(textureID) then
+			return "item:"..textureID..":0:0:0:0:0:0"
+		end
+
+		-- Last resort: create hash from name
+		local hash = 0
+		for i = 1, #name do
+			hash = hash + name:byte(i)
+		end
+		return "item:"..(900000 + (hash % 90000))..":0:0:0:0:0:0"
+	end
+
+	return nil
+end
+
 function Util:IsProfessionReady()
 	if GetTradeSkillLine() == "UNKNOWN" or not GetNumTradeSkills() or GetNumTradeSkills() <= 0 or InCombatLockdown() then
 		return
@@ -104,7 +132,7 @@ function Util:ScanCurrentProfession()
 				local numMade = floor(((lNum or 1) + (hNum or 1))/2)
 				local hasCD = GetSpellBaseCooldown(spellID) > 0 and 1 or nil
 				local mats = {}
-				if currentTradeSkill == TSM.enchantingName and strfind(itemLink, "enchant:") then
+				if currentTradeSkill == TSM.enchantingName and strfind(itemLink, "enchant:") and TSM.VellumInfo[spellID] then
 					local VellumString = "item:"..TSM.VellumInfo[spellID]..":0:0:0:0:0:0"
 					mats[VellumString] = 1
 					local name = TSMAPI:GetSafeItemInfo(VellumString) or nil
@@ -112,7 +140,7 @@ function Util:ScanCurrentProfession()
 					TSM.db.realm.mats[VellumString].name = TSM.db.realm.mats[VellumString].name or name
 					numMade = 1
 				end
-				
+
 				local isValid = true
 				for i=1, GetTradeSkillNumReagents(index) do
 					local name, texture, quantity = GetTradeSkillReagentInfo(index, i)
@@ -123,12 +151,12 @@ function Util:ScanCurrentProfession()
 					if not reagentLinkCache[name.."\001"..texture] then
 						reagentLinkCache[name.."\001"..texture] = GetTradeSkillReagentItemLink(index, i)
 					end
-					local matID = TSMAPI:GetItemString(reagentLinkCache[name.."\001"..texture])
+					local matID = GetMaterialID(reagentLinkCache[name.."\001"..texture], name, texture)
 					if not matID then
 						isValid = false
 						break
 					end
-					
+
 					mats[matID] = quantity
 					TSM.db.realm.mats[matID] = TSM.db.realm.mats[matID] or {}
 					TSM.db.realm.mats[matID].name = TSM.db.realm.mats[matID].name or name
@@ -289,17 +317,17 @@ function Util.ScanSyncedProfessionThread(self)
 					if not reagentLinkCache[name.."\001"..texture] then
 						reagentLinkCache[name.."\001"..texture] = GetTradeSkillReagentItemLink(index, i)
 					end
-					local matID = TSMAPI:GetItemString(reagentLinkCache[name.."\001"..texture])
+					local matID = GetMaterialID(reagentLinkCache[name.."\001"..texture], name, texture)
 					if not matID then
 						isValid = false
 						break
 					end
-					
+
 					mats[matID] = quantity
 					TSM.db.realm.mats[matID] = TSM.db.realm.mats[matID] or {}
 					TSM.db.realm.mats[matID].name = TSM.db.realm.mats[matID].name or name
 				end
-				
+
 				if isValid then
 					local players = TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].players or {}
 					players[playerName] = true

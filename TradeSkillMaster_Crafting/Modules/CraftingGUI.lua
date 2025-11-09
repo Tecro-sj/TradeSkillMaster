@@ -1380,7 +1380,14 @@ function GUI:CreateCraftInfoFrame(parent)
 	queueBtn:RegisterForClicks("AnyUp")
 	queueBtn:SetScript("OnClick", function(_, button)
 		local spellID = TSM.Util:GetSpellID(frame.index)
-		if not spellID or not TSM.db.realm.crafts[spellID] then return end
+		if not spellID then
+			TSM:Print("Error: Could not get spellID for index " .. (frame.index or "nil"))
+			return
+		end
+		if not TSM.db.realm.crafts[spellID] then
+			TSM:Print("Error: SpellID " .. spellID .. " not found in crafts database. Try rescanning your profession.")
+			return
+		end
 
 		-- Initialize queued if it doesn't exist
 		if not TSM.db.realm.crafts[spellID].queued then
