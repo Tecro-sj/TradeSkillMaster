@@ -91,8 +91,8 @@ end
 function private.UpdateTaskList()
 	if not private.frame then return end
 
-	local TSMCrafting = TSMAPI:GetModule("TradeSkillMaster_Crafting")
-	if not TSMCrafting or not TSMCrafting.db or not TSMCrafting.db.realm.crafts then
+	local TSMCrafting = LibStub("AceAddon-3.0"):GetAddon("TSM_Crafting", true)
+	if not TSMCrafting or not TSMCrafting.db or not TSMCrafting.db.realm or not TSMCrafting.db.realm.crafts then
 		private.frame.queueST:SetData({})
 		private.frame.matsST:SetData({})
 		return
@@ -103,7 +103,7 @@ function private.UpdateTaskList()
 
 	for spellID, data in pairs(TSMCrafting.db.realm.crafts) do
 		if data.queued and data.queued > 0 then
-			local Cost = TSMAPI:GetModule("TradeSkillMaster_Crafting", "Cost")
+			local Cost = TSMCrafting:GetModule("Cost", true)
 			local cost, buyout, profit
 			if Cost then
 				cost, buyout, profit = Cost:GetCraftPrices(spellID)
@@ -136,7 +136,7 @@ function private.UpdateTaskList()
 	private.frame.queueST:SetData(queueData)
 
 	local matsData = {}
-	local Inventory = TSMAPI:GetModule("TradeSkillMaster_Crafting", "Inventory")
+	local Inventory = TSMCrafting:GetModule("Inventory", true)
 	for itemString, totalNeeded in pairs(matsNeeded) do
 		local itemName = TSMAPI.Item:GetName(itemString)
 		if not itemName then
