@@ -76,7 +76,7 @@ function Sidebar:GetCurrentPage()
 		return "quick"
 	elseif private.currentPage == L["Custom Filter"] then
 		return "custom"
-	elseif private.currentPage == "Task List" then
+	elseif private.currentPage == L["Task List"] then
 		return "tasklist"
 	elseif private.currentPage == OTHER then
 		return "other"

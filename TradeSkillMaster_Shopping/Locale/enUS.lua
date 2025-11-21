@@ -141,6 +141,7 @@ L["Start Sniper"] = true
 L["Start Vendor Search"] = true
 L["Stop"] = true
 L["Stop Sniper"] = true
+L["Task List"] = true
 L["TSM Groups"] = true
 L["The Sniper feature will look in real-time for items that have recently been posted to the AH which are worth snatching! You can configure the parameters of Sniper in the Shopping options."] = true
 L["The disenchant search looks for items on the AH below their disenchant value. You can set the maximum percentage of disenchant value to search for in the Shopping General options"] = true

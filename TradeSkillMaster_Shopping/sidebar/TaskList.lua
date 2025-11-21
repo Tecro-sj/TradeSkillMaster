@@ -159,5 +159,5 @@ function private.UpdateTaskList()
 end
 
 do
-	TSM:AddSidebarFeature("Task List", private.Create, private.UpdateTaskList)
+	TSM:AddSidebarFeature(L["Task List"], private.Create, private.UpdateTaskList)
 end
