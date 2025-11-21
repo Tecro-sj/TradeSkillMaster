@@ -2879,8 +2879,14 @@ function GUI:GatheringEventHandler(event)
 end
 
 function GUI:AutoShowTaskListAtAuctionHouse()
-	-- Check if there are items in the queue or needed materials
-	local hasQueue = next(TSM.db.realm.gathering.neededMats) ~= nil
+	-- Check if there are items in the craft queue
+	local hasQueue = false
+	for spellID, data in pairs(TSM.db.realm.crafts) do
+		if data.queued and data.queued > 0 then
+			hasQueue = true
+			break
+		end
+	end
 
 	if not hasQueue then
 		-- No items in queue, don't show Task List
