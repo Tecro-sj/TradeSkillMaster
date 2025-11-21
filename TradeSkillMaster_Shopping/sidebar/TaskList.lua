@@ -18,6 +18,12 @@ function private.Create(parent)
 	helpText:SetText("Craft Queue - Items to Craft")
 	frame.helpText = helpText
 
+	local queueSTParent = CreateFrame("Frame", nil, frame)
+	queueSTParent:SetPoint("TOPLEFT", helpText, "BOTTOMLEFT", 0, -5)
+	queueSTParent:SetPoint("TOPRIGHT", helpText, "BOTTOMRIGHT", 0, -5)
+	queueSTParent:SetHeight(150)
+	TSMAPI.Design:SetFrameColor(queueSTParent)
+
 	local queueCols = {
 		{ name = "Craft", width = 0.65, align = "LEFT" },
 		{ name = "Queue", width = 0.15, align = "CENTER" },
@@ -39,20 +45,23 @@ function private.Create(parent)
 		end
 	}
 
-	frame.queueST = TSMAPI:CreateScrollingTable(frame, queueCols, stHandlers, 10)
-	frame.queueST.frame:SetPoint("TOPLEFT", helpText, "BOTTOMLEFT", 0, -5)
-	frame.queueST.frame:SetPoint("TOPRIGHT", helpText, "BOTTOMRIGHT", 0, -5)
-	frame.queueST.frame:SetHeight(150)
+	frame.queueST = TSMAPI:CreateScrollingTable(queueSTParent, queueCols, stHandlers, 10)
 	frame.queueST:DisableSelection(true)
 
 	local matsText = TSMAPI.GUI:CreateLabel(frame)
-	matsText:SetPoint("TOPLEFT", frame.queueST.frame, "BOTTOMLEFT", 0, -10)
-	matsText:SetPoint("TOPRIGHT", frame.queueST.frame, "BOTTOMRIGHT", 0, -10)
+	matsText:SetPoint("TOPLEFT", queueSTParent, "BOTTOMLEFT", 0, -10)
+	matsText:SetPoint("TOPRIGHT", queueSTParent, "BOTTOMRIGHT", 0, -10)
 	matsText:SetHeight(25)
 	matsText:SetJustifyH("CENTER")
 	matsText:SetJustifyV("CENTER")
 	matsText:SetText("Materials Needed")
 	frame.matsText = matsText
+
+	local matsSTParent = CreateFrame("Frame", nil, frame)
+	matsSTParent:SetPoint("TOPLEFT", matsText, "BOTTOMLEFT", 0, -5)
+	matsSTParent:SetPoint("TOPRIGHT", matsText, "BOTTOMRIGHT", 0, -5)
+	matsSTParent:SetPoint("BOTTOM", frame, 0, 5)
+	TSMAPI.Design:SetFrameColor(matsSTParent)
 
 	local matsCols = {
 		{ name = "Material", width = 0.50, align = "LEFT" },
@@ -72,10 +81,7 @@ function private.Create(parent)
 		end
 	}
 
-	frame.matsST = TSMAPI:CreateScrollingTable(frame, matsCols, matsHandlers, 8)
-	frame.matsST.frame:SetPoint("TOPLEFT", matsText, "BOTTOMLEFT", 0, -5)
-	frame.matsST.frame:SetPoint("TOPRIGHT", matsText, "BOTTOMRIGHT", 0, -5)
-	frame.matsST.frame:SetPoint("BOTTOM", frame, 0, 5)
+	frame.matsST = TSMAPI:CreateScrollingTable(matsSTParent, matsCols, matsHandlers, 8)
 	frame.matsST:DisableSelection(true)
 
 	private.frame = frame
