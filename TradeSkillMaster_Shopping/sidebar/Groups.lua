@@ -109,5 +109,5 @@ function private.StartScan()
 end
 
 do
-	TSM:AddSidebarFeature(L["TSM Groups"], private.Create)
+	TSM:AddSidebarFeature(L["Groups"], private.Create)
 end
