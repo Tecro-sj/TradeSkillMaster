@@ -557,5 +557,5 @@ function private.UpdateTaskList()
 end
 
 do
-	TSM:AddSidebarFeature(L["Task List"], private.Create, private.UpdateTaskList)
+	TSM:AddSidebarFeature(L["Queue"], private.Create, private.UpdateTaskList)
 end
