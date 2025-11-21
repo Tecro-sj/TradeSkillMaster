@@ -2860,6 +2860,10 @@ function GUI:GatheringEventHandler(event)
 		if GUI.taskListFrame and GUI.taskListFrame.UpdateSearchAuctionButton then
 			GUI.taskListFrame.UpdateSearchAuctionButton()
 		end
+		-- Auto-show and snap Task List next to AuctionFrame if there are items in queue
+		TSMAPI:CreateTimeDelay("autoShowTaskListAtAH", 0.1, function()
+			GUI:AutoShowTaskListAtAuctionHouse()
+		end)
 	elseif event == "AUCTION_HOUSE_CLOSED" then
 		TSM.Inventory.gatherQuantity = nil
 		TSM.Inventory.gatherItem = nil
@@ -2872,6 +2876,56 @@ function GUI:GatheringEventHandler(event)
 		end
 	end
 	TSMAPI:CreateTimeDelay("gatheringUpdateThrottle", 0.3, GUI.UpdateGathering)
+end
+
+function GUI:AutoShowTaskListAtAuctionHouse()
+	-- Check if there are items in the queue or needed materials
+	local hasQueue = next(TSM.db.realm.gathering.neededMats) ~= nil
+
+	if not hasQueue then
+		-- No items in queue, don't show Task List
+		return
+	end
+
+	-- Create Task List if it doesn't exist
+	if not GUI.taskListFrame then
+		GUI:CreateTaskListWindow()
+		GUI.taskListFrame:Hide() -- Hide it initially so we can position it first
+	end
+
+	-- Check if Task List is already visible
+	if GUI.taskListFrame:IsVisible() then
+		-- Already visible, don't move it
+		return
+	end
+
+	-- Position Task List next to AuctionFrame (snap to right side)
+	if AuctionFrame and AuctionFrame:IsVisible() then
+		local auctionRight = AuctionFrame:GetRight()
+		local auctionTop = AuctionFrame:GetTop()
+		local taskListWidth = GUI.taskListFrame:GetWidth()
+
+		-- Position the Task List to the right of the AuctionFrame, aligned to top
+		GUI.taskListFrame:ClearAllPoints()
+		GUI.taskListFrame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", auctionRight + 2, auctionTop)
+
+		-- Expand if collapsed
+		if GUI.taskListFrame.isCollapsed then
+			GUI.taskListFrame.isCollapsed = false
+			GUI.taskListFrame:SetHeight(290)
+			GUI.taskListFrame.content:Show()
+			if GUI.taskListFrame.sizer then
+				GUI.taskListFrame.sizer:Show()
+			end
+			if GUI.taskListFrame.collapseBtn then
+				GUI.taskListFrame.collapseBtn:SetText("-")
+			end
+		end
+
+		-- Show the Task List
+		GUI.taskListFrame:Show()
+		GUI:UpdateTaskList()
+	end
 end
 
 function GUI:GetStatus()
