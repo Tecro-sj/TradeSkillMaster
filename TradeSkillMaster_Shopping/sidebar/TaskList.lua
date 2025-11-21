@@ -9,6 +9,7 @@ function private.Create(parent)
 	frame:SetAllPoints()
 	frame:SetScript("OnShow", private.UpdateTaskList)
 	TSMAPI.Design:SetFrameColor(frame)
+	private.frame = frame
 
 	local TSMCrafting = TSMAPI:GetModule("TradeSkillMaster_Crafting", "CraftingGUI")
 	if not TSMCrafting then
@@ -108,10 +109,8 @@ function private.Create(parent)
 	return frame
 end
 
-function private.UpdateTaskList(frame)
-	if type(frame) ~= "table" then
-		frame = private.frame
-	end
+function private.UpdateTaskList()
+	local frame = private.frame
 	if not frame then return end
 
 	local TSMCrafting = TSMAPI:GetModule("TradeSkillMaster_Crafting")
@@ -180,8 +179,6 @@ function private.UpdateTaskList(frame)
 	end
 
 	frame.matsST:SetData(matsData)
-
-	private.frame = frame
 end
 
 do

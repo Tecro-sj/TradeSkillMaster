@@ -30,11 +30,9 @@ modules\Options.lua
 
 sidebar\Sidebar.lua
 sidebar\Saved.lua
-sidebar\Sniper.lua
 sidebar\Groups.lua
 sidebar\ShoppingLog.lua
 sidebar\QuickPosting.lua
 sidebar\CustomFilter.lua
 sidebar\TaskList.lua
-sidebar\Crafting.lua
 sidebar\Other.lua
