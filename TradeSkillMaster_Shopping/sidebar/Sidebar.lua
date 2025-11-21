@@ -68,7 +68,7 @@ function Sidebar:GetCurrentPage()
 
 	if private.currentPage == L["Saved Searches"] then
 		return "saved"
-	elseif private.currentPage == L["TSM Groups"] then
+	elseif private.currentPage == L["Groups"] then
 		return "groups"
 	elseif private.currentPage == L["Log"] then
 		return "log"
