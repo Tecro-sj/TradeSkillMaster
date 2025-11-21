@@ -22,6 +22,7 @@ L["Bid Percent"] = "입찰가 백분율"
 L["Buyout"] = "즉시 구매가" -- Needs review
 L[ [=[Click to search for an item.
 Shift-Click to post at market value.]=] ] = "클릭하면 아이템을 검색합니다.\\nShift-Click 하면 시장 가격으로 등록합니다." -- Needs review
+-- L["Craft Queue"] = ""
 L["Custom Filter"] = "사용자 필터" -- Needs review
 L["Default Post Undercut Amount"] = "기본 등록 에누리 금액" -- Needs review
 L["Destroy Mode"] = "추출 모드" -- Needs review

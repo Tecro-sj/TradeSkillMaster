@@ -23,6 +23,7 @@ L["Buyout"] = "Выкуп"
 L[ [=[Click to search for an item.
 Shift-Click to post at market value.]=] ] = [=[Нажмите эту кнопку для поиска элемента.
 Shift + клик пост по рыночной стоимости.]=] -- Needs review
+-- L["Craft Queue"] = ""
 L["Custom Filter"] = "Пользовательский Фильтр" -- Needs review
 -- L["Default Post Undercut Amount"] = ""
 L["Destroy Mode"] = "режим уничтожения" -- Needs review

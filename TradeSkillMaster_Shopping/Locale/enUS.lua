@@ -28,6 +28,7 @@ L["Below Vendor Sell Price"] = true
 L["Bid Percent"] = true
 L["Buyout"] = true
 L["Click to search for an item.\nShift-Click to post at market value."] = true
+L["Craft Queue"] = true
 L["Custom Filter"] = true
 L["Default Post Undercut Amount"] = true
 L["Destroy Mode"] = true

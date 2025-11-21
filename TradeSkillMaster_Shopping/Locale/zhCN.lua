@@ -23,6 +23,7 @@ L["Buyout"] = "一口价"
 L[ [=[Click to search for an item.
 Shift-Click to post at market value.]=] ] = [=[单击物品 将扫描拍卖
 Shift+单击 将以列出的市场价格来发布拍卖]=]
+-- L["Craft Queue"] = ""
 L["Custom Filter"] = "自定义筛选器"
 L["Default Post Undercut Amount"] = "默认发布压价金额"
 L["Destroy Mode"] = "分解模式"

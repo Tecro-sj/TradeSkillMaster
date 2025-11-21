@@ -22,6 +22,7 @@ if not L then return end
 -- L["Buyout"] = ""
 --[==[ L[ [=[Click to search for an item.
 Shift-Click to post at market value.]=] ] = "" ]==]
+-- L["Craft Queue"] = ""
 -- L["Custom Filter"] = ""
 -- L["Default Post Undercut Amount"] = ""
 -- L["Destroy Mode"] = ""

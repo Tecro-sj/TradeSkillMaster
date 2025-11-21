@@ -23,6 +23,7 @@ L["Buyout"] = "Arremate"
 L[ [=[Click to search for an item.
 Shift-Click to post at market value.]=] ] = [=[Click para procurar um item.
 Shift-Click para postar com valor de mercado.]=]
+-- L["Craft Queue"] = ""
 L["Custom Filter"] = "Filtros" -- Needs review
 L["Default Post Undercut Amount"] = "Post com valor de corte padrão "
 L["Destroy Mode"] = "Modo destruir"
