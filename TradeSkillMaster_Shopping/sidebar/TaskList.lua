@@ -5,87 +5,59 @@ local private = {}
 
 function private.Create(parent)
 	local frame = CreateFrame("Frame", nil, parent)
-	frame:Hide()
 	frame:SetAllPoints()
-	frame:SetScript("OnShow", private.UpdateTaskList)
+	frame:SetScript("OnShow", function() private.UpdateTaskList() end)
 	TSMAPI.Design:SetFrameColor(frame)
-	private.frame = frame
 
-	local TSMCrafting = TSMAPI:GetModule("TradeSkillMaster_Crafting", "CraftingGUI")
-	if not TSMCrafting then
-		local noDataText = frame:CreateFontString(nil, "OVERLAY")
-		noDataText:SetFont(TSMAPI.Design:GetContentFont(), 16)
-		TSMAPI.Design:SetWidgetTextColor(noDataText)
-		noDataText:SetPoint("CENTER")
-		noDataText:SetText("TSM Crafting not loaded")
-		return frame
-	end
-
-	local queueContainer = CreateFrame("Frame", nil, frame)
-	queueContainer:SetPoint("TOPLEFT", 5, -5)
-	queueContainer:SetPoint("TOPRIGHT", -5, -5)
-	queueContainer:SetHeight(200)
-	TSMAPI.Design:SetFrameColor(queueContainer)
-	frame.queueContainer = queueContainer
-
-	local queueTitle = queueContainer:CreateFontString(nil, "OVERLAY")
-	queueTitle:SetFont(TSMAPI.Design:GetContentFont(), 14)
-	TSMAPI.Design:SetWidgetLabelColor(queueTitle)
-	queueTitle:SetPoint("TOP", queueContainer, 0, -5)
-	queueTitle:SetText("Craft Queue")
+	local helpText = TSMAPI.GUI:CreateLabel(frame)
+	helpText:SetPoint("TOPLEFT", 5, -5)
+	helpText:SetPoint("TOPRIGHT", -5, -5)
+	helpText:SetHeight(30)
+	helpText:SetJustifyH("CENTER")
+	helpText:SetJustifyV("CENTER")
+	helpText:SetText("Craft Queue - Items to Craft")
+	frame.helpText = helpText
 
 	local queueCols = {
-		{ name = "Crafts", width = 1, align = "Left" },
+		{ name = "Craft", width = 0.65, align = "LEFT" },
+		{ name = "Queue", width = 0.15, align = "CENTER" },
+		{ name = "Profit", width = 0.20, align = "RIGHT" },
 	}
 
 	local stHandlers = {
 		OnEnter = function(_, data, self)
 			if not data or not data.spellID then return end
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			local TSMCrafting = TSMAPI:GetModule("TradeSkillMaster_Crafting")
-			if TSMCrafting and TSMCrafting.db and TSMCrafting.db.realm.crafts[data.spellID] then
-				local craftData = TSMCrafting.db.realm.crafts[data.spellID]
-				GameTooltip:AddLine(craftData.name .. " (x" .. data.numQueued .. ")")
-				local moneyCoinsTooltip = TSMAPI:GetMoneyCoinsTooltip()
-				if data.profit then
-					local color = data.profit < 0 and "|cffff0000" or "|cff00ff00"
-					if moneyCoinsTooltip then
-						GameTooltip:AddLine("Profit: " .. (TSMAPI:FormatTextMoneyIcon(data.profit, color) or "---"))
-					else
-						GameTooltip:AddLine("Profit: " .. (TSMAPI:FormatTextMoney(data.profit, color) or "---"))
-					end
-				end
+			GameTooltip:AddLine(data.name)
+			if data.profit then
+				GameTooltip:AddLine("Profit per craft: " .. TSMAPI:FormatTextMoney(data.profit))
 			end
 			GameTooltip:Show()
 		end,
 		OnLeave = function()
-			GameTooltip:ClearLines()
 			GameTooltip:Hide()
 		end
 	}
 
-	frame.queueST = TSMAPI:CreateScrollingTable(queueContainer, queueCols, stHandlers, 8)
-	frame.queueST.frame:SetPoint("TOPLEFT", queueTitle, "BOTTOMLEFT", 0, -5)
-	frame.queueST.frame:SetPoint("BOTTOMRIGHT", queueContainer, -5, 5)
+	frame.queueST = TSMAPI:CreateScrollingTable(frame, queueCols, stHandlers, 10)
+	frame.queueST.frame:SetPoint("TOPLEFT", helpText, "BOTTOMLEFT", 0, -5)
+	frame.queueST.frame:SetPoint("TOPRIGHT", helpText, "BOTTOMRIGHT", 0, -5)
+	frame.queueST.frame:SetHeight(150)
 	frame.queueST:DisableSelection(true)
 
-	local matsContainer = CreateFrame("Frame", nil, frame)
-	matsContainer:SetPoint("TOPLEFT", queueContainer, "BOTTOMLEFT", 0, -10)
-	matsContainer:SetPoint("TOPRIGHT", queueContainer, "BOTTOMRIGHT", 0, -10)
-	matsContainer:SetPoint("BOTTOM", frame, 0, 5)
-	TSMAPI.Design:SetFrameColor(matsContainer)
-	frame.matsContainer = matsContainer
-
-	local matsTitle = matsContainer:CreateFontString(nil, "OVERLAY")
-	matsTitle:SetFont(TSMAPI.Design:GetContentFont(), 14)
-	TSMAPI.Design:SetWidgetLabelColor(matsTitle)
-	matsTitle:SetPoint("TOP", matsContainer, 0, -5)
-	matsTitle:SetText("Materials Needed")
+	local matsText = TSMAPI.GUI:CreateLabel(frame)
+	matsText:SetPoint("TOPLEFT", frame.queueST.frame, "BOTTOMLEFT", 0, -10)
+	matsText:SetPoint("TOPRIGHT", frame.queueST.frame, "BOTTOMRIGHT", 0, -10)
+	matsText:SetHeight(25)
+	matsText:SetJustifyH("CENTER")
+	matsText:SetJustifyV("CENTER")
+	matsText:SetText("Materials Needed")
+	frame.matsText = matsText
 
 	local matsCols = {
-		{ name = "Material", width = 0.5, align = "Left" },
-		{ name = "Need", width = 0.25, align = "Center" },
-		{ name = "Total", width = 0.25, align = "Center" },
+		{ name = "Material", width = 0.50, align = "LEFT" },
+		{ name = "Need", width = 0.25, align = "CENTER" },
+		{ name = "Have/Total", width = 0.25, align = "CENTER" },
 	}
 
 	local matsHandlers = {
@@ -96,25 +68,27 @@ function private.Create(parent)
 			GameTooltip:Show()
 		end,
 		OnLeave = function()
-			GameTooltip:ClearLines()
 			GameTooltip:Hide()
 		end
 	}
 
-	frame.matsST = TSMAPI:CreateScrollingTable(matsContainer, matsCols, matsHandlers, 8)
-	frame.matsST.frame:SetPoint("TOPLEFT", matsTitle, "BOTTOMLEFT", 0, -5)
-	frame.matsST.frame:SetPoint("BOTTOMRIGHT", matsContainer, -5, 5)
+	frame.matsST = TSMAPI:CreateScrollingTable(frame, matsCols, matsHandlers, 8)
+	frame.matsST.frame:SetPoint("TOPLEFT", matsText, "BOTTOMLEFT", 0, -5)
+	frame.matsST.frame:SetPoint("TOPRIGHT", matsText, "BOTTOMRIGHT", 0, -5)
+	frame.matsST.frame:SetPoint("BOTTOM", frame, 0, 5)
 	frame.matsST:DisableSelection(true)
 
+	private.frame = frame
 	return frame
 end
 
 function private.UpdateTaskList()
-	local frame = private.frame
-	if not frame then return end
+	if not private.frame then return end
 
 	local TSMCrafting = TSMAPI:GetModule("TradeSkillMaster_Crafting")
 	if not TSMCrafting or not TSMCrafting.db or not TSMCrafting.db.realm.crafts then
+		private.frame.queueST:SetData({})
+		private.frame.matsST:SetData({})
 		return
 	end
 
@@ -129,56 +103,59 @@ function private.UpdateTaskList()
 				cost, buyout, profit = Cost:GetCraftPrices(spellID)
 			end
 
-			local color = "|cffffffff"
+			local profitText = "---"
 			if profit then
-				color = profit < 0 and "|cffff0000" or "|cff00ff00"
-			end
-
-			local profitText = ""
-			if profit then
-				profitText = " " .. color .. TSMAPI:FormatTextMoney(profit) .. "|r"
+				profitText = TSMAPI:FormatTextMoney(profit, profit < 0 and "|cffff0000" or "|cff00ff00")
 			end
 
 			tinsert(queueData, {
 				cols = {
-					{ value = data.name .. " |cff99ffff(x" .. data.queued .. ")|r" .. profitText }
+					{ value = data.name },
+					{ value = data.queued },
+					{ value = profitText }
 				},
 				spellID = spellID,
-				numQueued = data.queued,
+				name = data.name,
 				profit = profit
 			})
 
-			for itemString, quantity in pairs(data.mats) do
-				matsNeeded[itemString] = (matsNeeded[itemString] or 0) + (quantity * data.queued)
+			if data.mats then
+				for itemString, quantity in pairs(data.mats) do
+					matsNeeded[itemString] = (matsNeeded[itemString] or 0) + (quantity * data.queued)
+				end
 			end
 		end
 	end
 
-	frame.queueST:SetData(queueData)
+	private.frame.queueST:SetData(queueData)
 
 	local matsData = {}
 	local Inventory = TSMAPI:GetModule("TradeSkillMaster_Crafting", "Inventory")
-	for itemString, quantity in pairs(matsNeeded) do
+	for itemString, totalNeeded in pairs(matsNeeded) do
 		local itemName = TSMAPI.Item:GetName(itemString)
-		local bagQuantity = 0
-		if Inventory then
-			bagQuantity = Inventory:GetTotalQuantity(itemString) or 0
+		if not itemName then
+			itemName = itemString
 		end
 
-		local need = max(quantity - bagQuantity, 0)
-		local needColor = need > 0 and "|cffff0000" or "|cff00ff00"
+		local have = 0
+		if Inventory then
+			have = Inventory:GetTotalQuantity(itemString) or 0
+		end
+
+		local need = max(totalNeeded - have, 0)
+		local needText = need > 0 and "|cffff0000" .. need .. "|r" or "|cff00ff00" .. need .. "|r"
 
 		tinsert(matsData, {
 			cols = {
-				{ value = itemName or itemString },
-				{ value = needColor .. need .. "|r" },
-				{ value = bagQuantity .. "/" .. quantity }
+				{ value = itemName },
+				{ value = needText },
+				{ value = have .. "/" .. totalNeeded }
 			},
 			itemString = itemString
 		})
 	end
 
-	frame.matsST:SetData(matsData)
+	private.frame.matsST:SetData(matsData)
 end
 
 do
