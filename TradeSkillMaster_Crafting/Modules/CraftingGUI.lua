@@ -1112,7 +1112,14 @@ function GUI:CreateProfessionsTab(parent)
 			TradeSkillCollapseAllButton:Click()
 			GUI:UpdateProfessionsTabST()
 		elseif col and col.colNum == 1 and data.spellID and button == "LeftButton" then
-			TSM.db.realm.craftFavorites[data.spellID] = not TSM.db.realm.craftFavorites[data.spellID]
+			TSM.db.realm.craftFavorites = TSM.db.realm.craftFavorites or {}
+			local newState = not TSM.db.realm.craftFavorites[data.spellID]
+			if newState then
+				TSM.db.realm.craftFavorites[data.spellID] = true
+			else
+				TSM.db.realm.craftFavorites[data.spellID] = nil
+			end
+			TSM:Print("Favorite toggled for spellID " .. data.spellID .. " to " .. tostring(newState))
 			GUI:UpdateProfessionsTabST()
 		elseif button == "LeftButton" then
 			if IsModifiedClick() then
