@@ -1107,11 +1107,11 @@ function GUI:CreateProfessionsTab(parent)
 
 	TSMAPI.GUI:CreateHorizontalLine(frame, -64)
 
-	local function OnSTRowClick(_, data, colNum, button)
+	local function OnSTRowClick(_, data, col, button)
 		if data.isCollapseAll then
 			TradeSkillCollapseAllButton:Click()
 			GUI:UpdateProfessionsTabST()
-		elseif colNum == 1 and data.spellID and button == "LeftButton" then
+		elseif col and col.colNum == 1 and data.spellID and button == "LeftButton" then
 			TSM.db.realm.craftFavorites[data.spellID] = not TSM.db.realm.craftFavorites[data.spellID]
 			GUI:UpdateProfessionsTabST()
 		elseif button == "LeftButton" then
@@ -1691,7 +1691,10 @@ function GUI:UpdateProfessionsTabST()
 			end
 
 			local isFavorite = spellID and TSM.db.realm.craftFavorites[spellID] or false
-			local favIcon = isFavorite and "|cffFFD700★|r" or ""
+			local favIcon = ""
+			if spellID then
+				favIcon = isFavorite and "|cffFFD700★|r" or "|cff888888☆|r"
+			end
 
 			local row = {
 				cols = {
