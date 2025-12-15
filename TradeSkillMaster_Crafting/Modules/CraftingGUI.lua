@@ -1108,11 +1108,10 @@ function GUI:CreateProfessionsTab(parent)
 	TSMAPI.GUI:CreateHorizontalLine(frame, -64)
 
 	local function OnSTRowClick(_, data, col, button)
-		TSM:Print("OnSTRowClick called: col=" .. tostring(col and col.colNum or "nil") .. " spellID=" .. tostring(data.spellID) .. " button=" .. tostring(button))
 		if data.isCollapseAll then
 			TradeSkillCollapseAllButton:Click()
 			GUI:UpdateProfessionsTabST()
-		elseif col and col.colNum == 1 and data.spellID and button == "LeftButton" then
+		elseif data.spellID and button == "LeftButton" then
 			TSM.db.realm.craftFavorites = TSM.db.realm.craftFavorites or {}
 			local newState = not TSM.db.realm.craftFavorites[data.spellID]
 			if newState then
