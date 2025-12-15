@@ -1755,7 +1755,7 @@ function GUI:UpdateSelectedTradeSkill(forceUpdate)
 	TradeSkillFrame.selectedSkill = TradeSkillFrame.selectedSkill or 1
 
 	-- Find the row in the table that matches the selected TradeSkill index
-	local stData = frame.st:GetData()
+	local stData = frame.st.data
 	local selectedRow = nil
 	if stData then
 		for i, row in ipairs(stData) do
