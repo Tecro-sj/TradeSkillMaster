@@ -1107,11 +1107,11 @@ function GUI:CreateProfessionsTab(parent)
 
 	TSMAPI.GUI:CreateHorizontalLine(frame, -64)
 
-	local function OnSTRowClick(rowFrame, cellFrame, data, cols, row, realrow, column, table, button)
+	local function OnSTRowClick(_, data, col, button)
 		if data.isCollapseAll then
 			TradeSkillCollapseAllButton:Click()
 			GUI:UpdateProfessionsTabST()
-		elseif column == 1 and data.spellID and button == "LeftButton" then
+		elseif data.spellID and button == "RightButton" then
 			TSM.db.realm.craftFavorites = TSM.db.realm.craftFavorites or {}
 			local newState = not TSM.db.realm.craftFavorites[data.spellID]
 			if newState then
@@ -1119,7 +1119,6 @@ function GUI:CreateProfessionsTab(parent)
 			else
 				TSM.db.realm.craftFavorites[data.spellID] = nil
 			end
-			TSM:Print("Favorite toggled for spellID " .. data.spellID .. " to " .. tostring(newState))
 			GUI:UpdateProfessionsTabST()
 		elseif button == "LeftButton" then
 			if IsModifiedClick() then
