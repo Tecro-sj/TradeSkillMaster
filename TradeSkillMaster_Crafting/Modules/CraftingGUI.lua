@@ -1107,9 +1107,12 @@ function GUI:CreateProfessionsTab(parent)
 
 	TSMAPI.GUI:CreateHorizontalLine(frame, -64)
 
-	local function OnSTRowClick(_, data, _, button)
+	local function OnSTRowClick(_, data, colNum, button)
 		if data.isCollapseAll then
 			TradeSkillCollapseAllButton:Click()
+			GUI:UpdateProfessionsTabST()
+		elseif colNum == 1 and data.spellID and button == "LeftButton" then
+			TSM.db.realm.craftFavorites[data.spellID] = not TSM.db.realm.craftFavorites[data.spellID]
 			GUI:UpdateProfessionsTabST()
 		elseif button == "LeftButton" then
 			if IsModifiedClick() then
@@ -1150,9 +1153,8 @@ function GUI:CreateProfessionsTab(parent)
 	TSMAPI.Design:SetFrameColor(stContainer)
 
 	local stCols = {
-		-- { name = L["Name"], width = 0.725, align = "LEFT" },
-		-- { name = GetPriceColumnText(), width = 0.275, align = "LEFT" },
-		{ name = L["Name"], width = 0.7, align = "LEFT" },
+		{ name = "", width = 0.05, align = "CENTER" },
+		{ name = L["Name"], width = 0.65, align = "LEFT" },
 		{ name = GetPriceColumnText(), width = 0.2, align = "LEFT" },
 		{ name = "P. %", width = 0.1, align = "LEFT" }
 	}
@@ -1562,6 +1564,8 @@ function GUI:UpdateProfessionsTabST()
 	local stData = {}
 	TSM:UpdateCraftReverseLookup()
 
+	TSM.db.realm.craftFavorites = TSM.db.realm.craftFavorites or {}
+
 	local function RGBPercToHex(tbl)
 		local r = tbl.r
 		local g = tbl.g
@@ -1579,6 +1583,9 @@ function GUI:UpdateProfessionsTabST()
 
 	local collapseAllRow = {
 		cols = {
+			{
+				value = "",
+			},
 			{
 				value = "|cff" .. RGBPercToHex(TradeSkillTypeColor.header) .. ALL .. " [" .. (TradeSkillCollapseAllButton.collapsed and "+" or "-") .. "]|r",
 			},
@@ -1683,8 +1690,14 @@ function GUI:UpdateProfessionsTabST()
 				end
 			end
 
+			local isFavorite = spellID and TSM.db.realm.craftFavorites[spellID] or false
+			local favIcon = isFavorite and "|cffFFD700★|r" or ""
+
 			local row = {
 				cols = {
+					{
+						value = favIcon,
+					},
 					{
 						value = skillName,
 					},
@@ -1696,6 +1709,7 @@ function GUI:UpdateProfessionsTabST()
 					},
 				},
 				index = i,
+				spellID = spellID,
 			}
 			tinsert(stData, row)
 			if skillType == "header" then
@@ -1705,6 +1719,20 @@ function GUI:UpdateProfessionsTabST()
 			end
 		end
 	end
+
+	table.sort(stData, function(a, b)
+		if a.isCollapseAll then return true end
+		if b.isCollapseAll then return false end
+
+		local aIsFav = a.spellID and TSM.db.realm.craftFavorites[a.spellID] or false
+		local bIsFav = b.spellID and TSM.db.realm.craftFavorites[b.spellID] or false
+
+		if aIsFav ~= bIsFav then
+			return aIsFav
+		end
+
+		return a.index < b.index
+	end)
 
 	local frame = GUI.frame.content.professionsTab
 	frame.st:SetData(stData)
