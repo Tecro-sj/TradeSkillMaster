@@ -1755,7 +1755,7 @@ function GUI:UpdateSelectedTradeSkill(forceUpdate)
 	TradeSkillFrame.selectedSkill = TradeSkillFrame.selectedSkill or 1
 
 	-- Find the row in the table that matches the selected TradeSkill index
-	local stData = frame.st.data
+	local stData = frame.st:GetData()
 	local selectedRow = nil
 	if stData then
 		for i, row in ipairs(stData) do
@@ -1766,19 +1766,13 @@ function GUI:UpdateSelectedTradeSkill(forceUpdate)
 		end
 	end
 
-	-- Debug output
-	if not selectedRow then
-		TSM:Printf("UpdateSelectedTradeSkill: Could not find row for index %s (total rows: %s)", tostring(TradeSkillFrame.selectedSkill), tostring(stData and #stData or "nil"))
-	else
-		TSM:Printf("UpdateSelectedTradeSkill: Found row %s for index %s (forceUpdate: %s)", tostring(selectedRow), tostring(TradeSkillFrame.selectedSkill), tostring(forceUpdate))
-	end
-
 	-- Only update selection if we found the row
 	if selectedRow then
 		frame.st:SetSelection(selectedRow)
-		frame.craftInfoFrame:SetTradeSkillIndex(TradeSkillFrame.selectedSkill)
-	elseif forceUpdate then
-		-- Force update even if row not found
+	end
+
+	-- Always update craft info frame
+	if selectedRow or forceUpdate then
 		frame.craftInfoFrame:SetTradeSkillIndex(TradeSkillFrame.selectedSkill)
 	end
 end
