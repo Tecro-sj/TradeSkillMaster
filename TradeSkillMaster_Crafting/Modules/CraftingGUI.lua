@@ -1766,9 +1766,13 @@ function GUI:UpdateSelectedTradeSkill(forceUpdate)
 		end
 	end
 
-	if forceUpdate or frame.st:GetSelection() ~= selectedRow then
+	local selectionChanged = frame.st:GetSelection() ~= selectedRow
+	if selectionChanged then
 		frame.st:SetSelection(selectedRow)
-		frame.craftInfoFrame.index = TradeSkillFrame.selectedSkill
+	end
+
+	if forceUpdate or selectionChanged then
+		frame.craftInfoFrame:SetTradeSkillIndex(TradeSkillFrame.selectedSkill)
 	end
 end
 
