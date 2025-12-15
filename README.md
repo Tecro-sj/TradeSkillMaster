@@ -1,5 +1,7 @@
 ## Added stuff
 
+-Favorite (you can Favorite Recipes inside the Crafting Window with Mouse rightclick)
+
 -Tasklist (/tsm Tasklist)
 
 -Tooltip improvements (some more informations)
@@ -9,16 +11,3 @@
 -Shopping "/exact" scans can be setup in options (how many sites you want too scan, default 0 (all))
 
 -Quick scan (experimental)
-
--Some Options are added for the above stuff
-  
-
-## Custom Price Setup
-Minimum Price
-  max(125% dbmarket,95% DBMinBuyOut)
-
-Maximum Price
-  10*max(125% dbmarket,95% DBMinBuyOut)
-
-Normal Price
-  2*max(125% dbmarket,95% DBMinBuyOut)
