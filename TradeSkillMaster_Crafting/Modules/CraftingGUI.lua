@@ -1755,18 +1755,20 @@ function GUI:UpdateSelectedTradeSkill(forceUpdate)
 	TradeSkillFrame.selectedSkill = TradeSkillFrame.selectedSkill or 1
 
 	-- Find the row in the table that matches the selected TradeSkill index
-	local stData = frame.st:GetData()
+	local stData = frame.st.data
 	local selectedRow = 1
-	for i, row in ipairs(stData) do
-		if row.index == TradeSkillFrame.selectedSkill then
-			selectedRow = i
-			break
+	if stData then
+		for i, row in ipairs(stData) do
+			if row.index == TradeSkillFrame.selectedSkill then
+				selectedRow = i
+				break
+			end
 		end
 	end
 
 	if forceUpdate or frame.st:GetSelection() ~= selectedRow then
 		frame.st:SetSelection(selectedRow)
-		frame.craftInfoFrame:SetTradeSkillIndex(TradeSkillFrame.selectedSkill)
+		frame.craftInfoFrame.index = TradeSkillFrame.selectedSkill
 	end
 end
 
