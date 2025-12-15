@@ -1108,6 +1108,7 @@ function GUI:CreateProfessionsTab(parent)
 	TSMAPI.GUI:CreateHorizontalLine(frame, -64)
 
 	local function OnSTRowClick(_, data, col, button)
+		TSM:Print("OnSTRowClick called: col=" .. tostring(col and col.colNum or "nil") .. " spellID=" .. tostring(data.spellID) .. " button=" .. tostring(button))
 		if data.isCollapseAll then
 			TradeSkillCollapseAllButton:Click()
 			GUI:UpdateProfessionsTabST()
