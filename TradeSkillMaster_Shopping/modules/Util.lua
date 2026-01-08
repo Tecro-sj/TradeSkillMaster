@@ -233,36 +233,49 @@ function private.ScanCallback(event, ...)
 		tremove(private.filterList, 1)
 		private:ScanNextFilter()
 	elseif event == "SCAN_COMPLETE" then
-		if not private.filterList or not private.filterList[1] then return end -- protect against sniper scan starts causing issues
 		local data = ...
-		if private.filterList[1].items then
-			for _, itemString in ipairs(private.filterList[1].items) do
-				if data[itemString] then
-					if data[itemString].isBaseItem then
-						for iString, auctionitem in pairs(data) do
-							if iString ~= itemString and TSMAPI:GetBaseItemString(iString) == itemString then
-								auctionitem.query = private.filterList[1]
-								private:ProcessItem(iString, auctionitem)
+		if private.filterList and private.filterList[1] then
+			if private.filterList[1].items then
+				for _, itemString in ipairs(private.filterList[1].items) do
+					if data[itemString] then
+						if data[itemString].isBaseItem then
+							for iString, auctionitem in pairs(data) do
+								if iString ~= itemString and TSMAPI:GetBaseItemString(iString) == itemString then
+									auctionitem.query = private.filterList[1]
+									private:ProcessItem(iString, auctionitem)
+								end
 							end
+						else
+							data[itemString].query = private.filterList[1]
+							private:ProcessItem(itemString, data[itemString])
 						end
-					else
-						data[itemString].query = private.filterList[1]
-						private:ProcessItem(itemString, data[itemString])
+					end
+				end
+			else
+				for itemString, auctionData in pairs(data) do
+					if not auctionData.isBaseItem then
+						auctionData.query = private.filterList[1]
+						private:ProcessItem(itemString, auctionData)
 					end
 				end
 			end
+			private:UpdateRT()
+			private.searchFrame.rt:ClearSelection()
+			tremove(private.filterList, 1)
+			private:ScanNextFilter()
 		else
+			-- Process data even if filterList is empty (can happen with maxPages limit)
+			-- Set a minimal query object to avoid errors in ProcessItem
 			for itemString, auctionData in pairs(data) do
 				if not auctionData.isBaseItem then
-					auctionData.query = private.filterList[1]
+					auctionData.query = auctionData.query or {}
 					private:ProcessItem(itemString, auctionData)
 				end
 			end
+			private:UpdateRT()
+			private.searchFrame.rt:ClearSelection()
+			private:ScanComplete()
 		end
-		private:UpdateRT()
-		private.searchFrame.rt:ClearSelection()
-		tremove(private.filterList, 1)
-		private:ScanNextFilter()
 	elseif event == "SCAN_LAST_PAGE_COMPLETE" then
 		local data = ...
 		for itemString, auctionData in pairs(data) do
@@ -396,7 +409,7 @@ function private:ProcessItem(itemString, auctionItem)
 	-- make sure we haven't already scanned this item (possible with common search terms)
 	if private.auctions[itemString] then return end
 	if not itemString or not auctionItem then return end
-	local query = auctionItem.query
+	local query = auctionItem.query or {}
 	query.minILevel = query.minILevel or 0
 	query.maxILevel = query.maxILevel or 0
 	query.minLevel = query.minLevel or 0
