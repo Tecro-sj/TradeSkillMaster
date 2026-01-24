@@ -939,19 +939,53 @@ function GUI:CreateProfessionsTab(parent)
 		end
 
 		local list = {}
-		for playerName, professionData in pairs(TSM.db.realm.tradeSkills) do
+		local order = {}
+
+		-- Collect all players and sort them alphabetically
+		local players = {}
+		for playerName in pairs(TSM.db.realm.tradeSkills) do
+			tinsert(players, playerName)
+		end
+		sort(players)
+
+		-- For each player, collect and sort their professions
+		for _, playerName in ipairs(players) do
+			local professionData = TSM.db.realm.tradeSkills[playerName]
+			local professions = {}
+
+			-- Collect professions for this player
 			for name, data in pairs(professionData) do
-				-- Show all characters' professions (not just current player)
-				if not data.isSecondary then
-					list[playerName .. "~" .. name] = format("%s %d/%d - %s", name, data.level or "?", data.maxLevel or "?", playerName)
+				-- Show all professions (including secondary like Cooking, First Aid)
+				-- Only filter out non-crafting professions (already handled by invalidTrade in UpdateTradeSkills)
+				tinsert(professions, {name = name, data = data})
+			end
+
+			-- Sort professions: Primary first, then secondary; alphabetically within each group
+			sort(professions, function(a, b)
+				local aSecondary = a.data.isSecondary and 1 or 0
+				local bSecondary = b.data.isSecondary and 1 or 0
+				if aSecondary ~= bSecondary then
+					return aSecondary < bSecondary
 				end
+				return a.name < b.name
+			end)
+
+			-- Add professions to list in sorted order, grouped by player
+			for _, prof in ipairs(professions) do
+				local key = playerName .. "~" .. prof.name
+				local skillText = format("%d/%d", prof.data.level or 0, prof.data.maxLevel or 0)
+				-- Format: "CharakterName - Beruf (Skill)"
+				list[key] = format("%s - %s (%s)", playerName, prof.name, skillText)
+				tinsert(order, key)
 			end
 		end
-		self.dropdown:SetList(list)
+
+		self.dropdown:SetList(list, order)
 
 		local playerName = select(2, IsTradeSkillLinked()) or player
 		local professionName, level, maxLevel = GetTradeSkillLine()
-		local professionString = format("%s %d/%d - %s", professionName, level, maxLevel, playerName)
+		-- Format: "CharakterName - Beruf (Skill)" to match the dropdown entries
+		local professionString = format("%s - %s (%d/%d)", playerName, professionName, level, maxLevel)
 		currentSelection = playerName .. "~" .. professionName
 		self.dropdown:SetValue(currentSelection)
 		if not list[playerName .. "~" .. professionName] then
@@ -1533,9 +1567,16 @@ function GUI:CreateGroupsTab(parent)
 	RestockGroups = groupTree
 
 	local function OnCreateBtnClick()
-		if TSM.db.realm.tradeSkills[UnitName("player")][GetTradeSkillLine()] then
-			TSM.db.realm.tradeSkills[UnitName("player")][GetTradeSkillLine()].prompted = nil
-		end
+		local playerName = UnitName("player")
+		local tradeSkill = GetTradeSkillLine()
+
+		-- Ensure the tradeSkills table exists
+		TSM.db.realm.tradeSkills[playerName] = TSM.db.realm.tradeSkills[playerName] or {}
+		TSM.db.realm.tradeSkills[playerName][tradeSkill] = TSM.db.realm.tradeSkills[playerName][tradeSkill] or {}
+
+		-- Reset the prompted flag to allow re-creation of profession groups
+		TSM.db.realm.tradeSkills[playerName][tradeSkill].prompted = nil
+
 		private.forceCreateGroups = true
 		TSM.Util:ScanCurrentProfession()
 	end
@@ -1802,14 +1843,15 @@ local function GetSubMaterials(itemString, quantity, depth, visited)
 			local totalMatQuantity = matQuantity * quantity
 			subMats[matItemString] = (subMats[matItemString] or 0) + totalMatQuantity
 
-			-- Recursively get sub-sub-materials
-			local subSubMats = GetSubMaterials(matItemString, totalMatQuantity, depth + 1, CopyTable(visited))
+			-- Recursively get sub-sub-materials (pass visited directly to detect circular dependencies)
+			local subSubMats = GetSubMaterials(matItemString, totalMatQuantity, depth + 1, visited)
 			for subSubMatString, subSubMatQuantity in pairs(subSubMats) do
 				subMats[subSubMatString] = (subMats[subSubMatString] or 0) + subSubMatQuantity
 			end
 		end
 	end
 
+	visited[itemString] = nil  -- Remove from visited when done with this level
 	return subMats
 end
 
@@ -1833,32 +1875,58 @@ local function GetRawMaterials(itemString, quantity, depth, visited)
 	-- If we have enough of this item, don't break it down into sub-materials
 	if haveQuantity >= quantity then
 		rawMats[itemString] = quantity
+		visited[itemString] = nil  -- Remove from visited since we're not recursing
 		return rawMats
 	end
 
-	-- If we have some, we still need the rest
-	local stillNeed = quantity - haveQuantity
-
-	-- If item can be crafted, break down what we still need into sub-materials
+	-- Check if this item can be crafted AND if it makes sense to craft it
+	local shouldCraft = false
 	if spellID and TSM.db.realm.crafts[spellID] and TSM.db.realm.crafts[spellID].mats then
-		-- Add what we already have
-		if haveQuantity > 0 then
-			rawMats[itemString] = haveQuantity
+		local craft = TSM.db.realm.crafts[spellID]
+
+		-- Count number of different materials and check ratio
+		local numMats = 0
+		local totalMatQuantity = 0
+		for matItemString, matQuantity in pairs(craft.mats) do
+			numMats = numMats + 1
+			totalMatQuantity = totalMatQuantity + matQuantity
 		end
 
-		-- Break down only what we still need to craft
-		for matItemString, matQuantity in pairs(TSM.db.realm.crafts[spellID].mats) do
+		-- Don't use "trading" recipes (e.g., 5x Heavy Leather -> 1x Thick Leather)
+		-- These have a single material with high quantity (ratio >= 3:1) and produce 1 item
+		local numResult = craft.numResult or 1
+		local isTrading = (numMats == 1 and totalMatQuantity >= 3 and numResult == 1)
+
+		-- Only craft if we have ZERO of this item and it's not a trading recipe
+		shouldCraft = (haveQuantity == 0 and not isTrading)
+	end
+
+	if shouldCraft then
+		local craft = TSM.db.realm.crafts[spellID]
+		local stillNeed = quantity
+
+		-- Break down what we need to craft into sub-materials
+		for matItemString, matQuantity in pairs(craft.mats) do
 			local totalMatQuantity = matQuantity * stillNeed
-			local subRawMats = GetRawMaterials(matItemString, totalMatQuantity, depth + 1, CopyTable(visited))
+			-- Pass visited directly (not a copy) to detect circular dependencies
+			local subRawMats = GetRawMaterials(matItemString, totalMatQuantity, depth + 1, visited)
 			for rawMatString, rawMatQuantity in pairs(subRawMats) do
 				rawMats[rawMatString] = (rawMats[rawMatString] or 0) + rawMatQuantity
 			end
 		end
 	else
-		-- This is a raw material or can't be crafted
-		rawMats[itemString] = (rawMats[itemString] or 0) + quantity
+		-- This is a raw material, can't be crafted, or shouldn't be crafted (trading recipe or we have some)
+		if haveQuantity > 0 then
+			rawMats[itemString] = haveQuantity
+		end
+		-- Add what we still need as raw material
+		local stillNeed = quantity - haveQuantity
+		if stillNeed > 0 then
+			rawMats[itemString] = (rawMats[itemString] or 0) + stillNeed
+		end
 	end
 
+	visited[itemString] = nil  -- Remove from visited when done with this level
 	return rawMats
 end
 
@@ -2227,14 +2295,23 @@ end
 function GUI:PromptPresetGroups(currentTradeSkill, presetGroupInfo)
 	GUI:RestoreFilters()
 
+	-- If forceCreateGroups is set, create groups directly without prompting
+	if private.forceCreateGroups then
+		private.forceCreateGroups = nil
+		TSM:Printf(L["Created profession group for %s."], currentTradeSkill)
+		TSMAPI:CreatePresetGroups(presetGroupInfo, nil, nil, true) -- forceMove = true
+		if TSM.db.realm.tradeSkills[UnitName("player")][currentTradeSkill] then
+			TSM.db.realm.tradeSkills[UnitName("player")][currentTradeSkill].prompted = true
+		end
+		GUI:UpdateProfessionsTabST()
+		return
+	end
+
+	-- Normal prompt flow for first-time profession scan
 	if TSM.db.realm.tradeSkills[UnitName("player")][currentTradeSkill] and not TSM.db.realm.tradeSkills[UnitName("player")][currentTradeSkill].prompted then
 		GUI.frame.prompt.profession = currentTradeSkill
 		GUI.frame.prompt.presetGroupInfo = presetGroupInfo
 		GUI.frame.prompt:Show()
-		if private.forceCreateGroups then
-			private.forceCreateGroups = nil
-			GUI.frame.prompt.yesBtn:Click()
-		end
 	end
 end
 

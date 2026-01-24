@@ -91,7 +91,7 @@ function IsDuplicatePage()
 		end
 	end
 
-	if numLinks > 1 and private.pageTemp.shown == GetNumAuctionItems("list") then
+	if numLinks > 1 and private.pageTemp.numShown == GetNumAuctionItems("list") then
 		return false
 	end
 
@@ -303,7 +303,11 @@ function private:ScanAuctions()
 
 	if private.scanType == "lastPage" then
 		return DoCallback("SCAN_LAST_PAGE_COMPLETE", private.data)
-	elseif totalPages > 0 and private.query.page >= totalPages then
+	elseif totalPages == 0 then
+		-- No auctions found at all - complete the scan immediately
+		private:StopScanning()
+		return DoCallback("SCAN_COMPLETE", private.data)
+	elseif private.query.page >= totalPages then
 		-- we have finished scanning this query
 		private:StopScanning()
 		return DoCallback("SCAN_COMPLETE", private.data)

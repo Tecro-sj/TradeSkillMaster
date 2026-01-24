@@ -285,9 +285,11 @@ function TSM:GetGroupOperations(path, module)
 end
 
 -- Takes a list of itemString/groupPath k,v pairs and adds them to new groups.
-function TSMAPI:CreatePresetGroups(itemList, moduleName, operationInfo)
+function TSMAPI:CreatePresetGroups(itemList, moduleName, operationInfo, forceMove)
+	-- First pass: Create all necessary groups (regardless of item status)
+	local createdGroups = {}
 	for itemString, groupPath in pairs(itemList) do
-		if not TSM.db.profile.items[itemString] and not TSMAPI:IsSoulbound(itemString) then
+		if not createdGroups[groupPath] then
 			local pathParts = {TSM.GROUP_SEP:split(groupPath)}
 			for i=1, #pathParts do
 				local path = table.concat(pathParts, TSM.GROUP_SEP, 1, i)
@@ -295,7 +297,23 @@ function TSMAPI:CreatePresetGroups(itemList, moduleName, operationInfo)
 					CreateGroup(path)
 				end
 			end
-			AddItem(itemString, groupPath)
+			createdGroups[groupPath] = true
+		end
+	end
+
+	-- Second pass: Add/Move items to groups
+	for itemString, groupPath in pairs(itemList) do
+		if not TSMAPI:IsSoulbound(itemString) then
+			local currentGroup = TSM.db.profile.items[itemString]
+
+			-- Add item if it's not in any group, OR move it if forceMove is enabled
+			if not currentGroup then
+				AddItem(itemString, groupPath)
+			elseif forceMove and currentGroup ~= groupPath then
+				MoveItem(itemString, groupPath)
+			end
+
+			-- Set operations if needed
 			if moduleName and operationInfo and operationInfo[groupPath] then
 				if strfind(groupPath, TSM.GROUP_SEP) then
 					SetOperationOverride(groupPath, moduleName, true)

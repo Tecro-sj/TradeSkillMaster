@@ -415,7 +415,24 @@ function private:ProcessItem(itemString, auctionItem)
 	query.minLevel = query.minLevel or 0
 	query.maxLevel = query.maxLevel or 0
 	local name, _, _, ilvl, lvl = TSMAPI:GetSafeItemInfo(itemString)
-	
+
+	-- Safety check: if item info is not available yet, skip filtering but keep the item
+	-- This can happen on private servers or when item cache is not populated
+	if not name then
+		-- Try to get name from auction item link as fallback
+		if auctionItem.itemLink then
+			name = auctionItem.itemLink:match("%[(.-)%]")
+		end
+		-- If still no name, we can't filter properly - skip this item
+		if not name then
+			return
+		end
+	end
+
+	-- Default ilvl and lvl if not available
+	ilvl = ilvl or 0
+	lvl = lvl or 0
+
 	-- check if this item is outside our level or ilvl filters
 	if query.minILevel > 0 and (ilvl < query.minILevel or (query.maxILevel > 0 and ilvl > query.maxILevel)) then
 		private.auctions[itemString] = nil
@@ -425,10 +442,10 @@ function private:ProcessItem(itemString, auctionItem)
 		private.auctions[itemString] = nil
 		return
 	end
-	
+
 	-- check for /exact filter
 	-- Allow items that match exactly OR start with the search term followed by " of " (for random enchants)
-	if query.exactOnly then
+	if query.exactOnly and query.name then
 		local lowerName = strlower(name)
 		local lowerQuery = strlower(query.name)
 		local isExactMatch = lowerName == lowerQuery
